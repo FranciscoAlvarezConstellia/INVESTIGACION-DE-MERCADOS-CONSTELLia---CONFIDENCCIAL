@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONSTELLia · Ritual Orbital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ─── DESIGN TOKENS ─── */
+    :root {
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+      --text-xs:   clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm:   clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg:   clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl:   clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl:  clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+      --space-4: 1rem;    --space-5: 1.25rem; --space-6: 1.5rem;
+      --space-8: 2rem;    --space-10: 2.5rem; --space-12: 3rem;
+      --space-16: 4rem;
+      --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem;
+      --radius-xl: 1rem;     --radius-full: 9999px;
+      --transition: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* DARK PALETTE – cósmica */
+    [data-theme="dark"] {
+      --bg:            #08090f;
+      --surface:       #0d0f1a;
+      --surface-2:     #12152b;
+      --surface-3:     #181c38;
+      --border:        rgba(148,130,210,0.15);
+      --border-strong: rgba(148,130,210,0.35);
+      --text:          #e8e6f5;
+      --text-muted:    #9b98b8;
+      --text-faint:    #5a5875;
+      --accent:        #9482d2;
+      --accent-glow:   rgba(148,130,210,0.25);
+      --accent-deep:   #6a52b8;
+      --gold:          #c9a84c;
+      --gold-glow:     rgba(201,168,76,0.2);
+      --danger:        #e05a7a;
+      --danger-bg:     rgba(224,90,122,0.12);
+      --success:       #4daa77;
+      --success-bg:    rgba(77,170,119,0.12);
+      --warning:       #e8a84c;
+      --warning-bg:    rgba(232,168,76,0.12);
+      --shadow-md:     0 4px 24px rgba(0,0,0,0.6);
+      --shadow-lg:     0 12px 48px rgba(0,0,0,0.7);
+    }
+
+    /* ─── RESET BASE ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100dvh;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+    input, textarea, select { font: inherit; color: inherit; }
+    img { display: block; max-width: 100%; }
+    ::selection { background: var(--accent-glow); color: var(--text); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* ─── STARFIELD ─── */
+    #starfield {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .star {
+      position: absolute; border-radius: 50%; background: white;
+      animation: twinkle var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: var(--op-low, 0.1); transform: scale(1); }
+      50%        { opacity: var(--op-high, 0.7); transform: scale(1.3); }
+    }
+
+    /* ─── OUTER ORBITS DECORACIÓN ─── */
+    .orbit-ring {
+      position: fixed; border-radius: 50%; border: 1px solid rgba(148,130,210,0.06);
+      pointer-events: none; z-index: 0; animation: orbit-pulse 8s ease-in-out infinite;
+    }
+    @keyframes orbit-pulse { 0%,100%{opacity:0.4;} 50%{opacity:0.8;} }
+
+    /* ─── MAIN SHELL ─── */
+    .shell {
+      position: relative; z-index: 1;
+      min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: var(--space-6) var(--space-4);
+    }
+
+    /* ─── LOGO HEADER ─── */
+    .ritual-header {
+      text-align: center; padding: var(--space-8) 0 var(--space-6);
+      width: 100%; max-width: 640px;
+    }
+    .logo-svg { margin: 0 auto var(--space-3); }
+    .logo-wordmark {
+      font-family: var(--font-display);
+      font-size: var(--text-xl); font-weight: 300; letter-spacing: 0.15em;
+      background: linear-gradient(135deg, #c4b5f4 0%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .logo-sub {
+      font-size: var(--text-xs); letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--text-faint); margin-top: var(--space-1);
+    }
+
+    /* ─── PROGRESS TRACK ─── */
+    .progress-track {
+      width: 100%; max-width: 640px;
+      display: flex; align-items: center; gap: var(--space-2);
+      margin-bottom: var(--space-6);
+    }
+    .progress-bar-wrap {
+      flex: 1; height: 3px; background: var(--surface-3);
+      border-radius: var(--radius-full); overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--gold) 100%);
+      border-radius: var(--radius-full);
+      transition: width 0.4s var(--transition);
+    }
+    .progress-label {
+      font-size: var(--text-xs); color: var(--text-faint);
+      white-space: nowrap; min-width: 50px; text-align: right;
+    }
+    .phase-label {
+      font-size: var(--text-xs); color: var(--accent); letter-spacing: 0.15em;
+      text-transform: uppercase; white-space: nowrap; min-width: 90px;
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      width: 100%; max-width: 640px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: var(--space-10) var(--space-8);
+      box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.03);
+      animation: fade-rise 0.35s ease forwards;
+    }
+    @keyframes fade-rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── STEP STATES ─── */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* ─── STEP HEADER ─── */
+    .step-icon { font-size: 2rem; margin-bottom: var(--space-3); }
+    .step-phase {
+      font-size: var(--text-xs); letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: var(--space-2);
+    }
+    .step-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl); font-weight: 400; line-height: 1.2;
+      color: var(--text); margin-bottom: var(--space-3);
+    }
+    .step-desc {
+      font-size: var(--text-sm); color: var(--text-muted);
+      line-height: 1.75; margin-bottom: var(--space-6);
+    }
+    .step-desc strong { color: var(--text); font-weight: 500; }
+    .divider {
+      height: 1px; background: var(--border); margin: var(--space-6) 0;
+    }
+
+    /* ─── FORM ELEMENTS ─── */
+    .form-group { margin-bottom: var(--space-6); }
+    .form-label {
+      display: block; font-size: var(--text-sm); font-weight: 500;
+      color: var(--text); margin-bottom: var(--space-3);
+    }
+    .form-hint {
+      font-size: var(--text-xs); color: var(--text-faint);
+      margin-top: var(--space-2);
+    }
+
+    /* Radio / Checkbox options */
+    .option-group { display: flex; flex-direction: column; gap: var(--space-2); }
+    .opt {
+      display: flex; align-items: flex-start; gap: var(--space-3);
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+      position: relative;
+    }
+    .opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .opt:hover { border-color: var(--border-strong); background: var(--surface-3); }
+    .opt.selected {
+      border-color: var(--accent);
+      background: var(--surface-3);
+      box-shadow: 0 0 0 1px var(--accent), inset 0 0 20px var(--accent-glow);
+    }
+    .opt-indicator {
+      flex-shrink: 0; margin-top: 2px;
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--border-strong);
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color var(--transition), background var(--transition);
+    }
+    .opt.selected .opt-indicator { border-color: var(--accent); background: var(--accent); }
+    .opt-indicator-check { width: 8px; height: 8px; border-radius: 50%; background: white; display: none; }
+    .opt.selected .opt-indicator-check { display: block; }
+
+    /* Checkbox variant */
+    .opt-cb .opt-indicator { border-radius: var(--radius-sm); }
+    .opt-cb.selected .opt-indicator::after {
+      content: '✓'; font-size: 10px; font-weight: 700;
+      color: white; line-height: 1;
+    }
+    .opt-cb .opt-indicator-check { display: none !important; }
+
+    .opt-content { flex: 1; }
+    .opt-text { font-size: var(--text-sm); font-weight: 500; color: var(--text); }
+    .opt-sub  { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+
+    /* Text inputs */
+    .text-input, .textarea-input {
+      width: 100%; background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      color: var(--text); font-size: var(--text-sm);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .text-input:focus, .textarea-input:focus {
+      border-color: var(--accent); outline: none;
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .text-input::placeholder, .textarea-input::placeholder { color: var(--text-faint); }
+    .textarea-input { min-height: 120px; resize: vertical; }
+    .char-counter { font-size: var(--text-xs); color: var(--text-faint); text-align: right; margin-top: var(--space-1); }
+
+    /* ─── DISCLAIMER / ALERT BOXES ─── */
+    .disclaimer-box {
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6);
+      font-size: var(--text-sm); line-height: 1.7;
+      margin-bottom: var(--space-5);
+    }
+    .disclaimer-box.neutral {
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .disclaimer-box.neutral strong { color: var(--text); }
+    .disclaimer-box.warning {
+      background: var(--warning-bg); border: 1px solid rgba(232,168,76,0.3);
+      color: var(--warning);
+    }
+    .disclaimer-box.danger {
+      background: var(--danger-bg); border: 1px solid rgba(224,90,122,0.4);
+      color: var(--danger);
+    }
+    .disclaimer-box.danger strong, .disclaimer-box.warning strong { font-weight: 600; }
+    .disclaimer-icon { font-size: 1.25rem; margin-bottom: var(--space-2); display: block; }
+
+    /* Consent items */
+    .consent-item {
+      display: flex; align-items: flex-start; gap: var(--space-3);
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .consent-item:last-child { border-bottom: none; }
+    .consent-item input[type="checkbox"] {
+      flex-shrink: 0; margin-top: 3px;
+      width: 18px; height: 18px;
+      accent-color: var(--accent); cursor: pointer;
+    }
+    .consent-item label { font-size: var(--text-sm); color: var(--text-muted); cursor: pointer; }
+    .consent-item label strong { color: var(--text); }
+    .consent-item label a { color: var(--accent); text-decoration: none; }
+    .consent-item label a:hover { text-decoration: underline; }
+    .consent-mandatory { color: var(--danger); font-size: var(--text-xs); margin-left: var(--space-1); }
+
+    /* ─── SOS BUTTON ─── */
+    .sos-banner {
+      background: var(--danger-bg); border: 1px solid rgba(224,90,122,0.4);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6);
+      margin-bottom: var(--space-6);
+    }
+    .sos-banner p { font-size: var(--text-sm); color: var(--danger); line-height: 1.7; margin-bottom: var(--space-3); }
+    .sos-banner p strong { font-weight: 600; }
+    .sos-links { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .sos-link {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: rgba(224,90,122,0.2); border: 1px solid rgba(224,90,122,0.5);
+      border-radius: var(--radius-full);
+      color: var(--danger); font-size: var(--text-xs); font-weight: 600;
+      text-decoration: none; letter-spacing: 0.05em;
+      transition: background var(--transition);
+    }
+    .sos-link:hover { background: rgba(224,90,122,0.35); }
+
+    /* ─── PAYMENT BLOCK ─── */
+    .payment-block {
+      background: var(--surface-2);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8) var(--space-8);
+      text-align: center; margin-bottom: var(--space-6);
+    }
+    .payment-price {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 300;
+      background: linear-gradient(135deg, #c4b5f4 0%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1;
+    }
+    .payment-period { font-size: var(--text-xs); color: var(--text-faint); letter-spacing: 0.1em; margin-top: var(--space-1); text-transform: uppercase; }
+    .payment-desc { font-size: var(--text-sm); color: var(--text-muted); margin: var(--space-4) 0; line-height: 1.7; }
+    .payment-includes {
+      display: flex; flex-direction: column; gap: var(--space-2);
+      margin: var(--space-5) 0; text-align: left;
+    }
+    .payment-include-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      font-size: var(--text-sm); color: var(--text-muted);
+    }
+    .payment-include-item::before {
+      content: '✦'; color: var(--gold); font-size: 0.65rem; flex-shrink: 0;
+    }
+    .payment-trust {
+      display: flex; align-items: center; justify-content: center; gap: var(--space-3);
+      font-size: var(--text-xs); color: var(--text-faint); margin-top: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .payment-trust span { display: flex; align-items: center; gap: var(--space-1); }
+
+    /* ─── BUTTONS ─── */
+    .btn-row { display: flex; gap: var(--space-3); margin-top: var(--space-6); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+      padding: var(--space-3) var(--space-6);
+      border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 500;
+      letter-spacing: 0.03em; min-height: 44px;
+      transition: all var(--transition);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-deep) 0%, var(--accent) 100%);
+      color: white; flex: 1;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 32px var(--accent-glow); }
+    .btn-primary:active { transform: none; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-ghost {
+      background: transparent; color: var(--text-muted);
+      border: 1.5px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--border-strong); color: var(--text); background: var(--surface-2); }
+    .btn-payment {
+      background: linear-gradient(135deg, var(--gold) 0%, #e8c070 100%);
+      color: #1a1200; font-weight: 600; flex: 1;
+      box-shadow: 0 0 24px var(--gold-glow);
+    }
+    .btn-payment:hover { transform: translateY(-1px); box-shadow: 0 4px 32px var(--gold-glow); }
+    .btn-payment:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ─── ERROR MESSAGE ─── */
+    .error-msg {
+      display: none; background: var(--danger-bg); border: 1px solid rgba(224,90,122,0.4);
+      color: var(--danger); border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4); font-size: var(--text-sm);
+      margin-top: var(--space-3); animation: fade-rise 0.2s ease;
+    }
+
+    /* ─── SUCCESS SCREEN ─── */
+    .success-screen {
+      text-align: center; padding: var(--space-10) var(--space-6);
+    }
+    .success-orbit {
+      width: 80px; height: 80px; margin: 0 auto var(--space-6);
+      border-radius: 50%;
+      background: conic-gradient(var(--accent), var(--gold), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      animation: spin-slow 8s linear infinite;
+    }
+    .success-orbit-inner {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--surface); display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem;
+    }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    .success-title {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl); font-weight: 300; margin-bottom: var(--space-4);
+    }
+    .success-text { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.8; margin-bottom: var(--space-3); max-width: 44ch; margin-inline: auto; }
+    .success-text strong { color: var(--text); }
+    .success-note {
+      margin-top: var(--space-8); padding: var(--space-4) var(--space-5);
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); font-size: var(--text-xs); color: var(--text-faint);
+      line-height: 1.7;
+    }
+
+    /* ─── FOOTER LEGAL ─── */
+    .footer-legal {
+      width: 100%; max-width: 640px;
+      padding: var(--space-8) 0 var(--space-6);
+      text-align: center; font-size: var(--text-xs); color: var(--text-faint);
+      line-height: 1.8;
+    }
+    .footer-legal a { color: var(--text-faint); text-decoration: underline; }
+    .footer-legal a:hover { color: var(--text-muted); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 480px) {
+      .card { padding: var(--space-6) var(--space-5); border-radius: var(--radius-xl); }
+      .btn-row { flex-direction: column-reverse; }
+      .btn { width: 100%; }
+      .payment-block { padding: var(--space-6); }
+    }
+
+    /* ─── EJEMPLO BUTTONS ─── */
+    .ejemplo-btn {
+      display: block; width: 100%;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+      color: var(--text-muted); font-size: var(--text-xs);
+      text-align: left; line-height: 1.5; cursor: pointer;
+      transition: border-color var(--transition), color var(--transition), background var(--transition);
+      font-style: italic;
+    }
+    .ejemplo-btn:hover {
+      border-color: var(--accent); color: var(--text);
+      background: var(--surface-3);
+    }
+    .ejemplo-btn.usado {
+      border-color: var(--accent); color: var(--accent);
+    }
+
+    /* ─── SCREENING SOS TOGGLE ─── */
+    .sos-hidden { display: none; }
+    .sos-visible { display: block; animation: fade-rise 0.3s ease; }
+  </style>
+</head>
+<body>
+
+<!-- Starfield -->
+<div id="starfield" aria-hidden="true"></div>
+
+<!-- Orbit rings decorativas -->
+<div class="orbit-ring" style="width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:0s;"></div>
+<div class="orbit-ring" style="width:900px;height:900px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:2s;"></div>
+<div class="orbit-ring" style="width:1200px;height:1200px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:4s;"></div>
+
+<div class="shell">
+
+  <!-- LOGO HEADER -->
+  <header class="ritual-header">
+    <div class="logo-svg">
+      <!-- SVG Logo CONSTELLia -->
+      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="CONSTELLia logo">
+        <circle cx="26" cy="26" r="24" stroke="url(#glogo)" stroke-width="1.5"/>
+        <circle cx="26" cy="26" r="3.5" fill="url(#glogo)"/>
+        <circle cx="26" cy="10" r="2" fill="#c4b5f4" opacity="0.9"/>
+        <circle cx="39" cy="18" r="1.5" fill="#c9a84c" opacity="0.8"/>
+        <circle cx="39" cy="34" r="2" fill="#c4b5f4" opacity="0.7"/>
+        <circle cx="26" cy="42" r="1.5" fill="#c9a84c" opacity="0.6"/>
+        <circle cx="13" cy="34" r="2" fill="#c4b5f4" opacity="0.8"/>
+        <circle cx="13" cy="18" r="1.5" fill="#c9a84c" opacity="0.9"/>
+        <line x1="26" y1="10" x2="39" y2="18" stroke="#c4b5f4" stroke-width="0.5" opacity="0.3"/>
+        <line x1="39" y1="18" x2="39" y2="34" stroke="#c9a84c" stroke-width="0.5" opacity="0.3"/>
+        <line x1="39" y1="34" x2="26" y2="42" stroke="#c4b5f4" stroke-width="0.5" opacity="0.3"/>
+        <line x1="26" y1="42" x2="13" y2="34" stroke="#c9a84c" stroke-width="0.5" opacity="0.3"/>
+        <line x1="13" y1="34" x2="13" y2="18" stroke="#c4b5f4" stroke-width="0.5" opacity="0.3"/>
+        <line x1="13" y1="18" x2="26" y2="10" stroke="#c9a84c" stroke-width="0.5" opacity="0.3"/>
+        <defs>
+          <linearGradient id="glogo" x1="0" y1="0" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#c4b5f4"/>
+            <stop offset="100%" stop-color="#c9a84c"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="logo-wordmark">CONSTELLia</div>
+    <div class="logo-sub">Ritual Orbital · Análisis Sistémico Personalizado</div>
+  </header>
+
+  <!-- PROGRESS -->
+  <div class="progress-track" id="progressTrack">
+    <span class="phase-label" id="phaseLabel">Bienvenida</span>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <span class="progress-label" id="progressLabel">0 / 11</span>
+  </div>
+
+  <!-- FORM -->
+  <main>
+    <div class="card">
+    <form id="ritualForm" novalidate>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 0 — BIENVENIDA + DISCLAIMER INTRO
+      ══════════════════════════════════════════════ -->
+      <div class="step active" data-step="0" data-phase="Bienvenida">
+        <div class="step-icon" aria-hidden="true">🌌</div>
+        <div class="step-phase">Inicio del Ritual</div>
+        <h1 class="step-title">Bienvenida orbital</h1>
+        <p class="step-desc">
+          Estás a punto de iniciar un <strong>mapa de tu inconsciente sistémico</strong>.<br>
+          No es un test. No es un diagnóstico. Es un espacio de autoexploración guiada donde
+          podrás reconocer patrones invisibles que estructuran tu vida.
+        </p>
+
+        <!-- BLOQUE DE PAGO TEMPRANO -->
+        <div class="payment-block" style="margin-bottom:var(--space-5);">
+          <div class="payment-price">15 €</div>
+          <div class="payment-period">pago único · sin suscripción · sin datos previos</div>
+          <p class="payment-desc">Activa primero tu acceso. Luego completas el ritual en privado —<br>tus respuestas <strong>nunca se guardan sin tu pago confirmado</strong>.</p>
+          <div class="payment-includes">
+            <div class="payment-include-item">Vídeo orbital personalizado 2–5 min (Synthesia + IA)</div>
+            <div class="payment-include-item">Imagen simbólica única generada para tu patrón</div>
+            <div class="payment-include-item">Análisis sistémico validado por facilitador humano</div>
+            <div class="payment-include-item">Entrega en 24–48h · cifrado RGPD · sin spam</div>
+          </div>
+          <div class="payment-trust">
+            <span>🔒 Pago seguro SSL</span>
+            <span>·</span>
+            <span>🛡️ Garantía 30 días</span>
+            <span>·</span>
+            <span>RGPD compliant</span>
+          </div>
+        </div>
+
+        <div class="disclaimer-box neutral">
+          <span class="disclaimer-icon">ℹ️</span>
+          <strong>Importante antes de comenzar</strong><br>
+          CONSTELLia es una herramienta de <strong>bienestar emocional y autoconocimiento sistémico</strong>, 
+          NO un servicio sanitario, clínico ni terapéutico. No emite diagnósticos ni sustituye atención psicológica profesional.
+          Si atraviesas una crisis activa, te invitamos a contactar al <strong>024 (Línea de Atención a conducta suicida)</strong> o al <strong>112</strong> antes de continuar.
+        </div>
+
+        <div class="disclaimer-box warning">
+          <span class="disclaimer-icon">🔒</span>
+          <strong>Privacidad máxima (RGPD)</strong><br>
+          Tus respuestas son consideradas <strong>datos sensibles de salud</strong> (art. 4.15 RGPD). 
+          Se procesan con cifrado TLS 1.3 + AES-256 y nunca se comparten con terceros sin tu consentimiento explícito.
+          Tus datos solo se usan para generar tu análisis personalizado.
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-group">
+          <label class="form-label" for="email_input">Tu email para recibir el análisis <span style="color:var(--danger)">*</span></label>
+          <input type="email" id="email_input" name="email" class="text-input" placeholder="tu@email.com" required autocomplete="email">
+          <p class="form-hint">Recibirás tu vídeo personalizado en 24–48h. Sin spam, jamás.</p>
+        </div>
+
+        <div class="form-group" style="margin-bottom:var(--space-4);">
+          <label class="form-label" for="email_input">Tu email para recibir el análisis <span style="color:var(--danger)">*</span></label>
+          <input type="email" id="email_input" name="email" class="text-input" placeholder="tu@email.com" required autocomplete="email">
+          <p class="form-hint">Recibirás tu vídeo en 24–48h. Tu email no se comparte con nadie.</p>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-payment" id="nextBtn0">✦ Activar mi Análisis Orbital — 15 €</button>
+        </div>
+        <p style="font-size:var(--text-xs);color:var(--text-faint);text-align:center;margin-top:var(--space-3);line-height:1.6;">
+          Serás redirigido/a a pago seguro. Tras confirmarlo, completarás el ritual en privado.<br>
+          Tus respuestas se procesan solo después del pago.
+        </p>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 1 — ÓRBITA DOMINANTE
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="1" data-phase="Patrón">
+        <div class="step-icon" aria-hidden="true">🌀</div>
+        <div class="step-phase">Fase 1 de 4 · Tu patrón</div>
+        <h2 class="step-title">Tu órbita emocional dominante</h2>
+        <p class="step-desc">¿Qué patrón reconoces más en tu vida? Las órbitas emocionales son ciclos que se repiten en cómo te relacionas, decides y sientes. Suele haber uno que te <em>pesa</em> más.</p>
+        <div class="form-group">
+          <div class="option-group" id="group_patron_dominante">
+            <label class="opt" tabindex="0"><input type="radio" name="patron_dominante" value="Repito relaciones o situaciones similares" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🔁 Repito relaciones o situaciones similares</span><span class="opt-sub">Parejas, trabajos o conflictos que parecen distintos pero se sienten igual</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="patron_dominante" value="Siento bloqueos para avanzar"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">⛓ Siento bloqueos para avanzar</span><span class="opt-sub">Hay algo que frena mis decisiones o mi crecimiento, aunque no sé exactamente qué</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="patron_dominante" value="Cargo con responsabilidades que no me corresponden"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🪢 Cargo con responsabilidades que no me corresponden</span><span class="opt-sub">Siento el peso de otros, lealtades invisibles o culpas que no entiendo bien</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="patron_dominante" value="Experimento emociones intensas difíciles de regular"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🌊 Emociones intensas difíciles de regular</span><span class="opt-sub">Reacciones que me sorprenden por su intensidad o que no puedo controlar</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="patron_dominante" value="Me siento desconectado de quién soy realmente"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🪞 Me siento desconectado de quién soy</span><span class="opt-sub">Como si actuase un rol que no es del todo mío</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="patron_dominante" value="Relaciones conflictivas con mi familia de origen"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">👥 Relaciones conflictivas con mi familia de origen</span><span class="opt-sub">Tensión, distancia o heridas no resueltas con padres, hermanos u otros</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 2 — INTENSIDAD
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="2" data-phase="Intensidad">
+        <div class="step-icon" aria-hidden="true">📊</div>
+        <div class="step-phase">Fase 1 de 4 · Profundidad del patrón</div>
+        <h2 class="step-title">La intensidad de tu órbita</h2>
+        <p class="step-desc">¿Cómo afecta este patrón tu día a día? No se trata de dramatizar ni minimizar. Solo reconocer el peso real que tiene <em>ahora mismo</em>.</p>
+        <div class="form-group">
+          <div class="option-group" id="group_intensidad">
+            <label class="opt" tabindex="0"><input type="radio" name="intensidad" value="1" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">1 · Leve</span><span class="opt-sub">Está presente pero casi no interfiere en mi vida cotidiana</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="intensidad" value="2"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">2 · Moderada</span><span class="opt-sub">Lo noto con regularidad, a veces me genera incomodidad</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="intensidad" value="3"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">3 · Significativa</span><span class="opt-sub">Influye en decisiones importantes y en cómo me relaciono</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="intensidad" value="4"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">4 · Intensa</span><span class="opt-sub">Limita áreas clave de mi vida con frecuencia</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="intensidad" value="5"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">5 · Crítica</span><span class="opt-sub">Determina muchas de mis decisiones y genera malestar constante</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 3 — POSICIÓN FAMILIAR
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="3" data-phase="Sistema familiar">
+        <div class="step-icon" aria-hidden="true">👥</div>
+        <div class="step-phase">Fase 2 de 4 · Sistema familiar</div>
+        <h2 class="step-title">Tu posición en el sistema familiar</h2>
+        <p class="step-desc">Tu lugar en el sistema <strong>determina tu rol invisible</strong>. Ser el mayor, el menor, hijo único o intermedio no es azar: es un patrón estructural.</p>
+        <div class="form-group">
+          <label class="form-label">¿Cuántos hermanos/as biológicos tienes?</label>
+          <div class="option-group" id="group_num_hermanos">
+            <label class="opt" tabindex="0"><input type="radio" name="num_hermanos" value="0" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Ninguno — hijo/a único/a</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="num_hermanos" value="1"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">1 hermano/a</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="num_hermanos" value="2"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">2 hermanos/as</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="num_hermanos" value="3"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">3 hermanos/as</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="num_hermanos" value="4 o más"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">4 o más</span></span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">¿Cuál es tu posición entre ellos?</label>
+          <div class="option-group" id="group_posicion_hermanos">
+            <label class="opt" tabindex="0"><input type="radio" name="posicion_hermanos" value="Hijo/a único/a" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Hijo/a único/a</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="posicion_hermanos" value="Primogénito/a"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Primogénito/a — el/la mayor</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="posicion_hermanos" value="Intermedio/a"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Intermedio/a</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="posicion_hermanos" value="Benjamín/a"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Benjamín/a — el/la menor</span></span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">¿Hay medios hermanos o hermanos adoptivos?</label>
+          <div class="option-group" id="group_medios_hermanos">
+            <label class="opt" tabindex="0"><input type="radio" name="medios_hermanos" value="Sí" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Sí</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="medios_hermanos" value="No"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">No</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="medios_hermanos" value="Prefiero no responder"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Prefiero no responder</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 4 — EVENTOS FAMILIARES
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="4" data-phase="Sistema familiar">
+        <div class="step-icon" aria-hidden="true">🧬</div>
+        <div class="step-phase">Fase 2 de 4 · Herencia sistémica</div>
+        <h2 class="step-title">Las historias familiares se heredan sin palabras</h2>
+        <p class="step-desc">Los eventos que marcaron a generaciones anteriores dejan huellas que se transmiten a través de roles, silencios y expectativas implícitas. Marca lo que sabes que ocurrió, aunque no lo hayas vivido directamente.</p>
+        <div class="form-group">
+          <label class="form-label">Selecciona todos los que apliquen:</label>
+          <div class="option-group" id="group_eventos_familiares">
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Fallecimiento temprano padre/madre"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Fallecimiento temprano de padre o madre</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Fallecimiento hermano/a"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Fallecimiento de hermano/a</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Adopción"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Adopción</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Migración/exilio"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Migración o exilio</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Divorcio padres"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Divorcio de los padres</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Crisis económica"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Crisis económica severa</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Secretos familiares"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Secretos familiares conocidos</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Enfermedades graves"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Enfermedades graves en la familia</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Violencia intrafamiliar"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Violencia intrafamiliar</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Ninguno"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Ninguno de los anteriores</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="eventos_familiares" value="Prefiero no responder"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🔒 Prefiero no responder</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 5 — RELACIÓN FAMILIA HOY
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="5" data-phase="Sistema familiar">
+        <div class="step-icon" aria-hidden="true">🌡️</div>
+        <div class="step-phase">Fase 2 de 4 · Vínculo actual</div>
+        <h2 class="step-title">Tu relación con el sistema ahora</h2>
+        <p class="step-desc">No importa si vives cerca o lejos. Importa cómo <strong>sientes</strong> esa relación cuando piensas en tu familia de origen.</p>
+        <div class="form-group">
+          <div class="option-group" id="group_relacion_familia">
+            <label class="opt" tabindex="0"><input type="radio" name="relacion_familia" value="Muy cercana y armoniosa" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🌟 Muy cercana y armoniosa</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="relacion_familia" value="Cercana con algunos conflictos"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🌤 Cercana, con algunos conflictos</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="relacion_familia" value="Distante pero cordial"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">⛅ Distante pero cordial</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="relacion_familia" value="Distante y conflictiva"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🌧 Distante y conflictiva</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="relacion_familia" value="Sin contacto"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🌑 Sin contacto</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="relacion_familia" value="Prefiero no responder"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🔒 Prefiero no responder</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 6 — PATRONES PAREJA
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="6" data-phase="Vínculos">
+        <div class="step-icon" aria-hidden="true">💞</div>
+        <div class="step-phase">Fase 3 de 4 · Vínculos</div>
+        <h2 class="step-title">Tus elecciones de pareja tienen un patrón</h2>
+        <p class="step-desc">Solemos reproducir roles y dinámicas relacionales aprendidos en la infancia. Marca lo que reconozcas, <em>sin juzgarte</em>.</p>
+        <div class="form-group">
+          <div class="option-group" id="group_patrones_pareja">
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="Parejas similares"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🔁 Elijo parejas con características similares</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="Repito rol familiar"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">👤 Repito el rol que tenía en mi familia</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="Personas distantes"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🎭 Atraigo personas emocionalmente distantes</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="Relaciones tóxicas"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">⚠️ Relaciones con control, celos o dependencia</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="Enamoramiento rápido"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🧲 Me enamoro rápido pero las relaciones se desgastan</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="Miedo abandono"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">💔 Miedo al abandono o a la intimidad real</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="Termino relaciones"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🚪 Termino relaciones cuando se vuelven muy reales</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="No identifico patrones"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">✅ No identifico patrones claros en este área</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="patrones_pareja" value="Prefiero no responder"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🔒 Prefiero no responder</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 7 — RED DE APOYO
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="7" data-phase="Recursos">
+        <div class="step-icon" aria-hidden="true">🤝</div>
+        <div class="step-phase">Fase 3 de 4 · Recursos</div>
+        <h2 class="step-title">Tu red de apoyo actual</h2>
+        <p class="step-desc">El apoyo social es un ancla. Reconocer si lo tienes o no es parte del mapa sistémico.</p>
+        <div class="form-group">
+          <div class="option-group" id="group_red_apoyo">
+            <label class="opt" tabindex="0"><input type="radio" name="red_apoyo" value="Red sólida" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🌟 Tengo una red de apoyo sólida</span><span class="opt-sub">Varias personas en quienes confío profundamente</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="red_apoyo" value="Algunas personas"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🌤 Tengo algunas personas cercanas</span><span class="opt-sub">1–2 personas con quienes puedo hablar de todo</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="red_apoyo" value="Red limitada"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">⛅ Mi red de apoyo es limitada</span><span class="opt-sub">Tengo gente, pero no siempre puedo abrirme</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="red_apoyo" value="Me siento solo/a"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🌧 Me siento bastante solo/a</span><span class="opt-sub">No tengo a quién acudir cuando lo necesito</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="red_apoyo" value="Prefiero no responder"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🔒 Prefiero no responder</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 8 — SCREENING CLÍNICO / SOS
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="8" data-phase="Seguridad">
+        <div class="step-icon" aria-hidden="true">🛡️</div>
+        <div class="step-phase">Verificación de seguridad</div>
+        <h2 class="step-title">Tu seguridad es lo primero</h2>
+        <p class="step-desc">Este paso es <strong>obligatorio y confidencial</strong>. Si experimentas alguna de estas situaciones <strong>ahora mismo</strong>, te recomendamos buscar apoyo profesional especializado antes de continuar.</p>
+
+        <div class="disclaimer-box danger">
+          <strong>⚠️ Este análisis NO sustituye atención clínica urgente.</strong><br>
+          Si estás en crisis, llama al <strong>024</strong> (atención a conducta suicida) o al <strong>112</strong> ahora mismo. Son gratuitos y confidenciales.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Selecciona todo lo que aplique <em>en este momento</em>:</label>
+          <div class="option-group" id="group_screening">
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="screening" value="Pensamientos suicidas" data-sos="true"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Pensamientos recurrentes de hacerme daño o quitarme la vida</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="screening" value="Consumo sustancias"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Consumo de sustancias que afecta mi vida cotidiana</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="screening" value="Violencia"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Episodios recientes de violencia (sufrida o ejercida)</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="screening" value="Desconexión realidad"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Experiencias de desconexión con la realidad</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="screening" value="Crisis pánico"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">Crisis de pánico o ansiedad que me impiden funcionar</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="screening" value="Ninguna"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">✅ Ninguna de las anteriores</span></span></label>
+          </div>
+        </div>
+
+        <!-- SOS Banner (oculto hasta activación) -->
+        <div id="sosBanner" class="sos-banner sos-hidden">
+          <p><strong>🆘 Hemos detectado que necesitas apoyo especializado ahora.</strong><br>
+          CONSTELLia no puede atenderte en este momento de la manera que mereces. Por favor contacta con un profesional cualificado:</p>
+          <div class="sos-links">
+            <a href="tel:024" class="sos-link">📞 024 — Conducta suicida</a>
+            <a href="tel:112" class="sos-link">🚨 112 — Emergencias</a>
+            <a href="https://telefonodelaesperanza.org" target="_blank" rel="noopener" class="sos-link">🌐 Tel. Esperanza</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 9 — DATOS CONTEXTUALES
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="9" data-phase="Contexto">
+        <div class="step-icon" aria-hidden="true">🗺️</div>
+        <div class="step-phase">Fase 4 de 4 · Tu contexto</div>
+        <h2 class="step-title">Para personalizar tu análisis orbital</h2>
+        <p class="step-desc">Estos datos nos ayudan a contextualizar tu mapa sistémico. Toda la información es <strong>confidencial y voluntaria</strong>.</p>
+        <div class="form-group">
+          <label class="form-label">Rango de edad</label>
+          <div class="option-group" id="group_edad">
+            <label class="opt" tabindex="0"><input type="radio" name="edad" value="18-25" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">18 – 25 años</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="edad" value="26-35"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">26 – 35 años</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="edad" value="36-45"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">36 – 45 años</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="edad" value="46-55"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">46 – 55 años</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="edad" value="56+"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">56 años o más</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="edad" value="Prefiero no responder"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🔒 Prefiero no responder</span></span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Género con el que te identificas</label>
+          <div class="option-group" id="group_genero">
+            <label class="opt" tabindex="0"><input type="radio" name="genero" value="Mujer" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Mujer</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="genero" value="Hombre"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Hombre</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="genero" value="No binario/a"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">No binario/a</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="genero" value="Prefiero no responder"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🔒 Prefiero no responder</span></span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado relacional actual</label>
+          <div class="option-group" id="group_estado_relacional">
+            <label class="opt" tabindex="0"><input type="radio" name="estado_relacional" value="Soltero/a" required><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Soltero/a</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="estado_relacional" value="En pareja"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">En pareja (sin convivencia)</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="estado_relacional" value="Conviviendo/casado"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Conviviendo / casado/a</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="estado_relacional" value="Separado/divorciado"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">Separado/a o divorciado/a</span></span></label>
+            <label class="opt" tabindex="0"><input type="radio" name="estado_relacional" value="Prefiero no responder"><span class="opt-indicator"><span class="opt-indicator-check"></span></span><span class="opt-content"><span class="opt-text">🔒 Prefiero no responder</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 10 — MOTIVACIÓN + COMENTARIO
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="10" data-phase="Intención">
+        <div class="step-icon" aria-hidden="true">🎯</div>
+        <div class="step-phase">Fase 4 de 4 · Tu intención</div>
+        <h2 class="step-title">Tu motivación orbital</h2>
+        <p class="step-desc">¿Qué área de tu vida necesita más claridad ahora? Selecciona hasta 2 opciones.</p>
+        <div class="form-group">
+          <div class="option-group" id="group_area_claridad">
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="area_claridad" value="Relaciones de pareja"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">💑 Relaciones de pareja / afectivas</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="area_claridad" value="Vínculos familiares"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">👨‍👩‍👧 Vínculos familiares</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="area_claridad" value="Crianza"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🧒 Crianza y relación con hijos/as</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="area_claridad" value="Trayectoria profesional"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">💼 Trayectoria profesional / vocacional</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="area_claridad" value="Patrones repetitivos"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🔄 Patrones repetitivos que quiero comprender</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="area_claridad" value="Sentido de vida"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🌟 Sentido de vida y propósito</span></span></label>
+            <label class="opt opt-cb" tabindex="0"><input type="checkbox" name="area_claridad" value="Autoconocimiento"><span class="opt-indicator"></span><span class="opt-content"><span class="opt-text">🪞 Autoconocimiento profundo</span></span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="comentario_final">¿Hay algo más que debamos saber? <span style="color:var(--text-faint)">(opcional)</span></label>
+
+          <!-- Ejemplos inspiradores -->
+          <div id="ejemplosWrap" style="margin-bottom:var(--space-3);">
+            <p style="font-size:var(--text-xs);color:var(--text-faint);margin-bottom:var(--space-2);letter-spacing:0.05em;">
+              💬 Ejemplos que otros comparten — pulsa uno para usarlo como base:
+            </p>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2);">
+              <button type="button" class="ejemplo-btn" data-texto="Recientemente pasé por una ruptura importante y siento que repito el mismo ciclo que en relaciones anteriores.">
+                "Recientemente pasé por una ruptura y siento que repito el mismo ciclo..."
+              </button>
+              <button type="button" class="ejemplo-btn" data-texto="Siempre he sentido que cargo con la responsabilidad de mantener unida a mi familia, aunque nadie me lo pidió.">
+                "Siempre sentí que cargo con mantener unida a mi familia, sin que nadie me lo pidiera..."
+              </button>
+              <button type="button" class="ejemplo-btn" data-texto="Hay un tema económico que se repite en mi familia desde generaciones y yo también lo estoy viviendo ahora.">
+                "Hay un patrón económico que se repite en mi familia y yo también lo vivo..."
+              </button>
+              <button type="button" class="ejemplo-btn" data-texto="Tengo dificultad para confiar en los demás, algo que creo viene de mi infancia, y me gustaría entenderlo mejor.">
+                "Me cuesta confiar en los demás, creo que viene de mi infancia..."
+              </button>
+              <button type="button" class="ejemplo-btn" data-texto="Estoy en un momento de cambio profesional y siento que algo me frena, como si no me permitiera avanzar.">
+                "Estoy en un cambio profesional y algo me frena, como si no me lo permitiera..."
+              </button>
+            </div>
+          </div>
+
+          <textarea id="comentario_final" name="comentario_final" class="textarea-input" 
+            placeholder="Escribe aquí tu contexto en 1–2 frases. Puedes pulsar un ejemplo arriba para empezar.&#10;&#10;⚠️ No incluyas nombres completos, diagnósticos clínicos ni datos de terceros." 
+            maxlength="300" style="min-height:140px;"></textarea>
+          <div class="char-counter"><span id="charCount">0</span> / 300</div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 11 — CONSENTIMIENTO RGPD + PAGO
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="11" data-phase="Confirmación">
+        <div class="step-icon" aria-hidden="true">✦</div>
+        <div class="step-phase">Confirmación y acceso</div>
+        <h2 class="step-title">Activa tu Análisis Orbital</h2>
+        <p class="step-desc">Tu mapa sistémico está listo para generarse. Confirma tu consentimiento y completa el acceso para recibir tu vídeo personalizado.</p>
+
+        <!-- CONSENTIMIENTOS RGPD -->
+        <div class="form-group">
+          <label class="form-label">Consentimiento informado <span style="color:var(--danger)">*</span></label>
+          
+          <div class="consent-item">
+            <input type="checkbox" id="consent_session" name="consent_session" value="true" required>
+            <label for="consent_session">
+              <strong>Procesamiento para el análisis</strong> <span class="consent-mandatory">Obligatorio</span><br>
+              Acepto que mis respuestas sean procesadas por IA sistémica de CONSTELLia (Perplexity Sonar) para generar mi análisis orbital personalizado. Entiendo que esta herramienta <strong>NO es un servicio sanitario</strong> y no sustituye atención psicológica profesional.
+            </label>
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="consent_rgpd" name="consent_rgpd" value="true" required>
+            <label for="consent_rgpd">
+              <strong>Política de privacidad (RGPD)</strong> <span class="consent-mandatory">Obligatorio</span><br>
+              He leído y acepto la <a href="#" target="_blank">Política de Privacidad</a>. Mis datos se tratarán conforme al RGPD (UE) 2016/679, con cifrado TLS 1.3 y AES-256. Puedo ejercer mis derechos de acceso, rectificación y supresión en cualquier momento.
+            </label>
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="consent_age" name="consent_age" value="true" required>
+            <label for="consent_age">
+              <strong>Mayoría de edad</strong> <span class="consent-mandatory">Obligatorio</span><br>
+              Confirmo que soy mayor de 18 años y soy responsable de mi proceso de autoexploración.
+            </label>
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="consent_tac" name="consent_tac" value="true" required>
+            <label for="consent_tac">
+              <strong>Términos y condiciones</strong> <span class="consent-mandatory">Obligatorio</span><br>
+              Acepto los <a href="#" target="_blank">Términos y Condiciones</a>. Entiendo que CONSTELLia no emite diagnósticos ni prescripciones y que en ningún caso reemplaza la atención de un profesional de salud mental.
+            </label>
+          </div>
+
+          <div class="consent-item">
+            <input type="checkbox" id="consent_marketing" name="consent_marketing" value="false">
+            <label for="consent_marketing">
+              <strong>Comunicaciones opcionales</strong> <span style="color:var(--text-faint);font-size:var(--text-xs)">Opcional</span><br>
+              Acepto recibir información sobre CONSTELLia, recursos de bienestar y novedades del servicio. Puedo darme de baja en cualquier momento.
+            </label>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- BLOQUE DE PAGO -->
+        <div class="payment-block">
+          <div class="payment-price">15 €</div>
+          <div class="payment-period">pago único · sin suscripción</div>
+          <p class="payment-desc">Tu <strong>Análisis Orbital Personalizado</strong> incluye un vídeo generado por IA sistémica, validado por un facilitador humano certificado.</p>
+          <div class="payment-includes">
+            <div class="payment-include-item">Vídeo personalizado de 2–5 minutos (Synthesia + voz IA)</div>
+            <div class="payment-include-item">Imagen simbólica única generada para tu patrón (DALL-E)</div>
+            <div class="payment-include-item">Análisis sistémico por IA (Perplexity Sonar)</div>
+            <div class="payment-include-item">Revisión y validación de facilitador humano</div>
+            <div class="payment-include-item">Entrega en 24–48 horas hábiles por email</div>
+            <div class="payment-include-item">Datos cifrados · no compartidos con terceros</div>
+          </div>
+          <div class="payment-trust">
+            <span>🔒 Pago seguro SSL</span>
+            <span>· RGPD compliant ·</span>
+            <span>🛡️ Garantía 30 días</span>
+          </div>
+        </div>
+
+        <div id="errorMsg" class="error-msg"></div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-payment" id="btnPagar" disabled>
+            ✦ Activar mi Análisis Orbital — 15 €
+          </button>
+        </div>
+        <p style="font-size:var(--text-xs);color:var(--text-faint);text-align:center;margin-top:var(--space-3);">
+          Al hacer clic serás redirigido/a a la pasarela de pago segura. Una vez confirmado el pago, tus respuestas se procesarán automáticamente.
+        </p>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           PASO 12 — PANTALLA DE ÉXITO
+      ══════════════════════════════════════════════ -->
+      <div class="step" data-step="12" data-phase="Completado">
+        <div class="success-screen">
+          <div class="success-orbit">
+            <div class="success-orbit-inner">✦</div>
+          </div>
+          <h2 class="success-title">Tu ritual orbital ha comenzado</h2>
+          <p class="success-text">Hemos recibido tu mapa sistémico. Tu <strong>Análisis Orbital Personalizado</strong> se está generando ahora.</p>
+          <p class="success-text">Recibirás un email con tu vídeo en las próximas <strong>24–48 horas hábiles</strong>. Revisa también la carpeta de spam.</p>
+          <div class="success-note">
+            🌌 <em>Lo que compartes aquí no desaparece. Se transforma en reconocimiento.<br>
+            Gracias por confiar en CONSTELLia.</em>
+          </div>
+        </div>
+      </div>
+
+    </form>
+    </div>
+
+    <!-- Botones de navegación global -->
+    <div style="width:100%;max-width:640px;" id="navButtons">
+      <div class="btn-row" id="mainNav" style="display:none;">
+        <button type="button" class="btn btn-ghost" id="prevBtn" style="display:none;">← Anterior</button>
+        <button type="button" class="btn btn-primary" id="nextBtn">Continuar →</button>
+      </div>
+    </div>
+
+    <div id="globalErrorMsg" class="error-msg" style="width:100%;max-width:640px;"></div>
+  </main>
+
+  <!-- FOOTER LEGAL -->
+  <footer class="footer-legal">
+    <p>CONSTELLia SL · Algeciras, Andalucía, España · <a href="mailto:hola@constellia.es">hola@constellia.es</a></p>
+    <p style="margin-top:var(--space-2);">
+      Este servicio es una herramienta de <strong>bienestar y autoconocimiento sistémico</strong>, no un servicio sanitario.<br>
+      No emite diagnósticos ni sustituye atención psicológica profesional.
+    </p>
+    <p style="margin-top:var(--space-2);">
+      <a href="#">Política de Privacidad</a> · <a href="#">Términos y Condiciones</a> · <a href="#">Código Ético</a>
+    </p>
+    <p style="margin-top:var(--space-2);">
+      En caso de crisis: <strong>024</strong> (atención suicidio) · <strong>112</strong> (emergencias)
+    </p>
+  </footer>
+
+</div><!-- /shell -->
+
+<script>
+// ─── CONFIGURACIÓN ─────────────────────────────────────────────
+const MAKE_WEBHOOK_URL = 'REEMPLAZAR_CON_URL_WEBHOOK_MAKE';
+// Ejemplo: 'https://hook.eu1.make.com/xxxxxxxxxxxxxxxxxxxx'
+// Esto REEMPLAZA la URL de Google Apps Script anterior
+
+const TOTAL_CONTENT_STEPS = 11; // pasos 0-11 (sin el éxito)
+
+// ─── STARFIELD GENERATION ──────────────────────────────────────
+(function generateStars() {
+  const sf = document.getElementById('starfield');
+  const count = window.innerWidth < 480 ? 60 : 120;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    const opLow = (Math.random() * 0.15 + 0.05).toFixed(2);
+    const opHigh = (Math.random() * 0.5 + 0.3).toFixed(2);
+    s.style.cssText = `
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      width:${size}px; height:${size}px;
+      --dur:${(Math.random()*5+3).toFixed(1)}s;
+      --delay:-${(Math.random()*6).toFixed(1)}s;
+      --op-low:${opLow}; --op-high:${opHigh};
+    `;
+    sf.appendChild(s);
+  }
+})();
+
+// ─── STATE ─────────────────────────────────────────────────────
+let currentStep = 0;
+const steps = document.querySelectorAll('.step');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const mainNav = document.getElementById('mainNav');
+const progressFill = document.getElementById('progressFill');
+const progressLabel = document.getElementById('progressLabel');
+const phaseLabel = document.getElementById('phaseLabel');
+const globalErrorMsg = document.getElementById('globalErrorMsg');
+const errorMsg = document.getElementById('errorMsg');
+
+// ─── OPTION CLICK HANDLERS ─────────────────────────────────────
+document.querySelectorAll('.opt').forEach(opt => {
+  const input = opt.querySelector('input');
+  opt.addEventListener('click', () => {
+    if (input.type === 'radio') {
+      document.querySelectorAll(`input[name="${input.name}"]`).forEach(r => {
+        r.closest('.opt').classList.remove('selected');
+      });
+      input.checked = true;
+      opt.classList.add('selected');
+    } else if (input.type === 'checkbox') {
+      // Special: area_claridad max 2
+      if (input.name === 'area_claridad') {
+        const checked = document.querySelectorAll('input[name="area_claridad"]:checked');
+        if (!input.checked && checked.length >= 2) return;
+      }
+      // Special: screening SOS
+      if (input.name === 'screening' && input.value === 'Ninguna' && !input.checked) {
+        // Uncheck all risk items
+        document.querySelectorAll('input[name="screening"][data-sos]').forEach(r => {
+          r.checked = false;
+          r.closest('.opt').classList.remove('selected');
+        });
+      }
+      if (input.value !== 'Ninguna' && input.name === 'screening') {
+        const ninguna = document.querySelector('input[name="screening"][value="Ninguna"]');
+        if (ninguna) { ninguna.checked = false; ninguna.closest('.opt').classList.remove('selected'); }
+      }
+      input.checked = !input.checked;
+      opt.classList.toggle('selected', input.checked);
+      // Check SOS
+      checkSOSActivation();
+    }
+  });
+  opt.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); opt.click(); }
+  });
+});
+
+// ─── SOS DETECTION ─────────────────────────────────────────────
+function checkSOSActivation() {
+  const sosItems = document.querySelectorAll('input[name="screening"][data-sos]:checked');
+  const sosBanner = document.getElementById('sosBanner');
+  if (sosItems.length > 0) {
+    sosBanner.classList.remove('sos-hidden');
+    sosBanner.classList.add('sos-visible');
+  } else {
+    sosBanner.classList.add('sos-hidden');
+    sosBanner.classList.remove('sos-visible');
+  }
+}
+
+// ─── CHAR COUNTER ──────────────────────────────────────────────
+const textarea = document.getElementById('comentario_final');
+const charCount = document.getElementById('charCount');
+if (textarea) {
+  textarea.addEventListener('input', () => { charCount.textContent = textarea.value.length; });
+}
+
+// ─── EJEMPLO BUTTONS ────────────────────────────────────────────
+document.querySelectorAll('.ejemplo-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const ta = document.getElementById('comentario_final');
+    ta.value = btn.dataset.texto;
+    charCount.textContent = ta.value.length;
+    ta.focus();
+    // Marcar ejemplo usado
+    document.querySelectorAll('.ejemplo-btn').forEach(b => b.classList.remove('usado'));
+    btn.classList.add('usado');
+    // Scroll suave al textarea
+    ta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+});
+
+// ─── PROGRESS UPDATE ───────────────────────────────────────────
+function updateProgress(step) {
+  const pct = step >= TOTAL_CONTENT_STEPS ? 100 : Math.round((step / TOTAL_CONTENT_STEPS) * 100);
+  progressFill.style.width = pct + '%';
+  progressLabel.textContent = step < TOTAL_CONTENT_STEPS ? `${step} / ${TOTAL_CONTENT_STEPS}` : '✓';
+  const stepEl = steps[step];
+  const phase = stepEl ? stepEl.dataset.phase : '';
+  phaseLabel.textContent = phase || '';
+}
+
+// ─── SHOW STEP ─────────────────────────────────────────────────
+function showStep(n) {
+  steps.forEach(s => s.classList.remove('active'));
+  if (steps[n]) steps[n].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateProgress(n);
+  globalErrorMsg.style.display = 'none';
+  // Nav buttons
+  if (n === 0) {
+    mainNav.style.display = 'none'; // paso 0 tiene su propio botón
+    document.getElementById('nextBtn0') && (document.getElementById('nextBtn0').style.display = '');
+  } else if (n === 11) {
+    mainNav.style.display = 'flex';
+    prevBtn.style.display = 'block';
+    nextBtn.style.display = 'none';
+  } else if (n === 12) {
+    mainNav.style.display = 'none';
+    document.getElementById('progressTrack').style.opacity = '0.3';
+  } else {
+    mainNav.style.display = 'flex';
+    prevBtn.style.display = n > 1 ? 'block' : 'none';
+    nextBtn.style.display = 'block';
+    nextBtn.textContent = n === 10 ? 'Ver resumen y pago →' : 'Continuar →';
+  }
+}
+
+// ─── VALIDATION ────────────────────────────────────────────────
+function validateStep(n) {
+  const stepEl = steps[n];
+  if (!stepEl) return true;
+  // email
+  if (n === 0) {
+    const em = document.querySelector('input[name="email"]');
+    if (!em || !em.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value)) {
+      showError('Por favor introduce un email válido para continuar.'); return false;
+    }
+    return true;
+  }
+  // radio groups required
+  const radios = stepEl.querySelectorAll('input[type="radio"][required]');
+  const radioNames = [...new Set([...radios].map(r => r.name))];
+  for (const name of radioNames) {
+    if (!stepEl.querySelector(`input[name="${name}"]:checked`)) {
+      showError('Por favor selecciona una opción para continuar.'); return false;
+    }
+  }
+  // paso 11: consentimientos
+  if (n === 11) {
+    const required = ['consent_session','consent_rgpd','consent_age','consent_tac'];
+    for (const id of required) {
+      if (!document.getElementById(id).checked) {
+        showError('Debes aceptar todos los consentimientos obligatorios para continuar.'); return false;
+      }
+    }
+  }
+  return true;
+}
+
+function showError(msg) {
+  globalErrorMsg.textContent = msg;
+  globalErrorMsg.style.display = 'block';
+  globalErrorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ─── CONSENT → UNLOCK PAYMENT BUTTON ──────────────────────────
+['consent_session','consent_rgpd','consent_age','consent_tac'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', checkConsentAndUnlock);
+});
+function checkConsentAndUnlock() {
+  const allChecked = ['consent_session','consent_rgpd','consent_age','consent_tac']
+    .every(id => document.getElementById(id)?.checked);
+  document.getElementById('btnPagar').disabled = !allChecked;
+}
+
+// ─── NAVIGATION ────────────────────────────────────────────────
+// Paso 0 tiene botón propio
+document.getElementById('nextBtn0')?.addEventListener('click', () => {
+  if (!validateStep(0)) return;
+  currentStep = 1;
+  showStep(1);
+});
+
+nextBtn.addEventListener('click', () => {
+  if (!validateStep(currentStep)) return;
+  currentStep++;
+  showStep(currentStep);
+});
+
+prevBtn.addEventListener('click', () => {
+  if (currentStep > 1) { currentStep--; showStep(currentStep); }
+});
+
+// ─── PAYMENT BUTTON ────────────────────────────────────────────
+document.getElementById('btnPagar').addEventListener('click', async () => {
+  if (!validateStep(11)) return;
+  const btn = document.getElementById('btnPagar');
+  btn.disabled = true;
+  btn.textContent = '⏳ Procesando...';
+  errorMsg.style.display = 'none';
+
+  const data = collectData();
+
+  try {
+    if (MAKE_WEBHOOK_URL === 'REEMPLAZAR_CON_URL_WEBHOOK_MAKE') {
+      // MODO DEMO: simula envío sin webhook real
+      await new Promise(r => setTimeout(r, 1500));
+      currentStep = 12;
+      showStep(12);
+      return;
+    }
+
+    // PRODUCCIÓN: envío real al webhook de Make
+    // NOTA: Make acepta CORS desde cualquier origen si está configurado.
+    // Usa mode: 'no-cors' como fallback si hay problemas de CORS.
+    await fetch(MAKE_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    // Redirigir a pasarela de pago
+    // Descomenta cuando tengas URL de Stripe/Redsys:
+    // window.location.href = 'https://buy.stripe.com/TU_PAYMENT_LINK?prefilled_email=' + encodeURIComponent(data.email);
+    
+    currentStep = 12;
+    showStep(12);
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '✦ Activar mi Análisis Orbital — 15 €';
+    errorMsg.textContent = 'Error al procesar. Por favor inténtalo de nuevo o escríbenos a hola@constellia.es';
+    errorMsg.style.display = 'block';
+  }
+});
+
+// ─── COLLECT DATA ──────────────────────────────────────────────
+function collectData() {
+  const d = {
+    // Metadatos
+    timestamp: new Date().toISOString(),
+    source: 'ritual-orbital-v3',
+    
+    // Datos de contacto
+    email: document.querySelector('input[name="email"]')?.value || '',
+    
+    // Patrón
+    patron_dominante: getRadio('patron_dominante'),
+    intensidad: getRadio('intensidad'),
+    
+    // Sistema familiar
+    num_hermanos: getRadio('num_hermanos'),
+    posicion_hermanos: getRadio('posicion_hermanos'),
+    medios_hermanos: getRadio('medios_hermanos'),
+    eventos_familiares: getCheckboxes('eventos_familiares'),
+    relacion_familia: getRadio('relacion_familia'),
+    
+    // Vínculos
+    patrones_pareja: getCheckboxes('patrones_pareja'),
+    red_apoyo: getRadio('red_apoyo'),
+    
+    // Screening (flag de riesgo)
+    screening: getCheckboxes('screening'),
+    flag_riesgo: document.querySelectorAll('input[name="screening"][data-sos]:checked').length > 0,
+    
+    // Contexto
+    edad: getRadio('edad'),
+    genero: getRadio('genero'),
+    estado_relacional: getRadio('estado_relacional'),
+    
+    // Intención
+    area_claridad: getCheckboxes('area_claridad'),
+    comentario_final: document.querySelector('textarea[name="comentario_final"]')?.value || '',
+    
+    // Consentimientos
+    consent_session: document.getElementById('consent_session')?.checked || false,
+    consent_rgpd: document.getElementById('consent_rgpd')?.checked || false,
+    consent_age: document.getElementById('consent_age')?.checked || false,
+    consent_tac: document.getElementById('consent_tac')?.checked || false,
+    consent_marketing: document.getElementById('consent_marketing')?.checked || false,
+    
+    // Estado de pago
+    payment_status: 'pending_redirect',
+    amount: '15.00',
+    currency: 'EUR'
+  };
+  return d;
+}
+
+function getRadio(name) {
+  return document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+}
+function getCheckboxes(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(c => c.value).join(', ');
+}
+
+// ─── INIT ──────────────────────────────────────────────────────
+showStep(0);
+</script>
+</body>
+</html>
