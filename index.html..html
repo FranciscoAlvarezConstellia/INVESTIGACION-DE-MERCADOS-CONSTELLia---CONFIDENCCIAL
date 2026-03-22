@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="slides-format" content="viewport">
+    <title>CONSTELLia — Análisis de Mercado 2025</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-bg: #0b0f1e;
+            --color-bg-deep: #060810;
+            --color-surface: #141828;
+            --color-text: #f0f4ff;
+            --color-text-secondary: #c4cbdf;
+            --color-text-muted: #7a85a3;
+            --color-accent-1: #7c6dff;
+            --color-accent-2: #38c8f0;
+            --color-accent-3: #f0a842;
+            --color-glass-bg: rgba(255,255,255,0.05);
+            --color-glass-border: rgba(255,255,255,0.09);
+            --color-vignette: rgba(0,0,0,0.45);
+            --font-display: 'Playfair Display', serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+    </style>
+    <style>
+        :root {
+            --color-bg: #0b0f1e;
+            --color-text: #f0f4ff;
+            --glow-color-rgb: 124,109,255;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: var(--color-bg); margin: 0; }
+        body { font-family: 'DM Sans', sans-serif; color: var(--color-text); overflow: hidden; height: 100vh; width: 100vw; }
+        .deck { width: 100vw; height: 100vh; position: relative; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.96); transition: opacity 0.65s ease, transform 0.65s ease; pointer-events: none; overflow: hidden; }
+        .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+        .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1140px; padding: clamp(1.5rem, 3.5vw, 3.5rem); }
+        .nav-controls { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; z-index: 100; background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); padding: 9px 22px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.09); }
+        .nav-btn { width: 38px; height: 38px; border: none; background: rgba(255,255,255,0.06); color: #7c6dff; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+        .nav-btn:hover { background: rgba(124,109,255,0.2); }
+        .slide-dots { display: flex; gap: 7px; }
+        .slide-dots .dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.3s, transform 0.3s; }
+        .slide-dots .dot.active { background: #7c6dff; transform: scale(1.35); }
+        .slide-counter { font-size: 0.78rem; color: #7a85a3; min-width: 38px; text-align: center; }
+        .reveal { opacity: 0; transform: translateY(18px); }
+
+        /* Glow */
+        .text-glow { text-shadow: 0 0 22px rgba(124,109,255,0.55), 0 0 44px rgba(124,109,255,0.22); }
+        .stat-glow { text-shadow: 0 0 28px rgba(56,200,240,0.6), 0 0 60px rgba(56,200,240,0.25); }
+        @keyframes glow-pulse { 0%,100%{text-shadow:0 0 20px rgba(124,109,255,0.5),0 0 40px rgba(124,109,255,0.2);}50%{text-shadow:0 0 32px rgba(124,109,255,0.8),0 0 64px rgba(124,109,255,0.35);} }
+        .glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+
+        /* Float blobs */
+        @keyframes float-slow { 0%{transform:translate(0,0) scale(1);}25%{transform:translate(55px,-45px) scale(1.1);}50%{transform:translate(-35px,38px) scale(0.92);}75%{transform:translate(48px,18px) scale(1.07);}100%{transform:translate(0,0) scale(1);} }
+        @keyframes float-drift { 0%{transform:translate(0,0) scale(1) rotate(0deg);}33%{transform:translate(-48px,-55px) scale(1.13) rotate(3deg);}66%{transform:translate(38px,28px) scale(0.9) rotate(-2deg);}100%{transform:translate(0,0) scale(1) rotate(0deg);} }
+        @keyframes float { 0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);} }
+        .gradient-mesh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(82px); animation: float-slow 11s ease-in-out infinite; }
+        .blob:nth-child(2) { animation: float-drift 15s ease-in-out infinite; }
+        .blob:nth-child(3) { animation: float-slow 19s ease-in-out infinite reverse; }
+        .blob:nth-child(4) { animation: float-drift 22s ease-in-out infinite reverse; }
+
+        /* Vignette + noise */
+        .slide::before { content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");background-repeat:repeat;background-size:256px 256px;opacity:0.03;mix-blend-mode:overlay; }
+        .slide::after { content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,var(--color-vignette) 100%); }
+
+        /* Bar chart */
+        .bar-chart { display:flex;align-items:flex-end;gap:clamp(0.4rem,1vw,0.7rem);height:clamp(110px,18vh,180px); }
+        .bar-col { display:flex;flex-direction:column;align-items:center;gap:0.28rem;flex:1; }
+        .bar { border-radius:6px 6px 0 0;width:100%; }
+        .bar-fill { height:0%;transition:height 0.55s ease;display:block;border-radius:6px 6px 0 0; }
+
+        /* Donut */
+        .donut-ring { stroke-dasharray:251.3;stroke-dashoffset:251.3;stroke-linecap:round; }
+
+        /* Horizontal bars */
+        .hbar-track { background:rgba(255,255,255,0.07);border-radius:999px;overflow:hidden;height:10px; }
+        .hbar-fill { height:100%;border-radius:999px;width:0;transition:width 0.65s ease; }
+
+        /* Flowchart connectors */
+        .flow-arrow { width:2px;height:32px;background:linear-gradient(to bottom,#7c6dff,#38c8f0);margin:0 auto;position:relative; }
+        .flow-arrow::after { content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #38c8f0; }
+
+        /* Timeline */
+        .tl-line { position:absolute;left:50%;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,#7c6dff,#38c8f0,#f0a842);transform:translateX(-50%); }
+        .tl-dot { width:14px;height:14px;border-radius:50%;background:#7c6dff;box-shadow:0 0 12px rgba(124,109,255,0.7);position:absolute;left:50%;transform:translateX(-50%); }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms !important;transition-duration:0.2s !important;}}
+
+        /* === SLIDE SPECIFIC === */
+        .slide-1 .logo-pill { background:rgba(124,109,255,0.12);border:1px solid rgba(124,109,255,0.25);border-radius:999px;padding:0.5rem 1.5rem;display:inline-block;margin-bottom:1.2rem; }
+        .metric-card { background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.1rem 1rem;transition:transform 0.25s,box-shadow 0.25s; }
+        .metric-card:hover { transform:translateY(-4px);box-shadow:0 12px 30px rgba(124,109,255,0.18); }
+        .glass-card { background:rgba(255,255,255,0.05);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:1.3rem; }
+        .glass-card:hover { transform:translateY(-3px);box-shadow:0 10px 28px rgba(124,109,255,0.15); }
+        .accent-border-l { border-left:3px solid #7c6dff; }
+        .accent-border-l-2 { border-left:3px solid #38c8f0; }
+        .accent-border-l-3 { border-left:3px solid #f0a842; }
+        .tag-pill { display:inline-block;padding:0.2rem 0.75rem;border-radius:999px;font-size:0.72rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase; }
+
+        /* Radar chart */
+        .radar-shape { stroke-dasharray:600;stroke-dashoffset:600;transition:stroke-dashoffset 1s ease; }
+
+        /* Deco shapes parallax */
+        .deco-shape { position:absolute;pointer-events:none;will-change:transform;transition:transform 0.1s linear; }
+    </style>
+</head>
+<body>
+<div class="mouse-spotlight" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+
+<div class="deck">
+
+<!-- ======= SLIDE 1: PORTADA ======= -->
+<div class="slide active" data-slide="1">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:520px;height:520px;top:-120px;right:-100px;background:#7c6dff;opacity:0.14;"></div>
+        <div class="blob" style="width:320px;height:320px;bottom:-80px;left:-60px;background:#38c8f0;opacity:0.11;"></div>
+        <div class="blob" style="width:200px;height:200px;top:45%;left:12%;background:#f0a842;opacity:0.09;"></div>
+        <div class="blob" style="width:160px;height:160px;top:20%;right:25%;background:#38c8f0;opacity:0.07;"></div>
+    </div>
+    <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="deco-shape" data-speed="0.04" style="width:180px;height:180px;border:1px solid rgba(124,109,255,0.1);border-radius:50%;top:15%;left:8%;"></div>
+    <div class="deco-shape" data-speed="0.025" style="width:90px;height:90px;border:1px solid rgba(56,200,240,0.1);border-radius:50%;bottom:20%;right:10%;"></div>
+    <div class="content text-center">
+        <div class="logo-pill reveal">
+            <span style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;background:linear-gradient(90deg,#7c6dff,#38c8f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">✦ CONSTELLia</span>
+        </div>
+        <h1 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(2.8rem,6.5vw,5.2rem);font-weight:900;line-height:1.05;background:linear-gradient(135deg,#a89bff 0%,#38c8f0 50%,#f0a842 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:1rem;">Análisis de Mercado<br>España 2025–2030</h1>
+        <p class="reveal" style="font-size:clamp(0.85rem,1.4vw,1.15rem);color:#7a85a3;letter-spacing:0.32em;text-transform:uppercase;margin-bottom:2rem;">Salud Mental Digital · Bienestar · Corporate Wellness</p>
+        <div class="reveal" style="display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;">
+            <div style="text-align:center;">
+                <div style="font-size:1.8rem;font-weight:900;background:linear-gradient(90deg,#7c6dff,#38c8f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">$4.188M</div>
+                <div style="font-size:0.72rem;color:#7a85a3;text-transform:uppercase;letter-spacing:0.12em;">Mercado TAM España</div>
+            </div>
+            <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+            <div style="text-align:center;">
+                <div style="font-size:1.8rem;font-weight:900;color:#f0a842;">16M+</div>
+                <div style="font-size:0.72rem;color:#7a85a3;text-transform:uppercase;letter-spacing:0.12em;">Personas afectadas</div>
+            </div>
+            <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+            <div style="text-align:center;">
+                <div style="font-size:1.8rem;font-weight:900;color:#38c8f0;">+18.5%</div>
+                <div style="font-size:0.72rem;color:#7a85a3;text-transform:uppercase;letter-spacing:0.12em;">CAGR proyectado</div>
+            </div>
+        </div>
+        <div class="reveal" style="margin-top:2.2rem;font-size:0.78rem;color:#7a85a3;">Preparado para aceleradora · Marzo 2026</div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 2: CONTEXTO EPIDÉMICO ======= -->
+<div class="slide" data-slide="2">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:380px;height:380px;top:-80px;right:-80px;background:#7c6dff;opacity:0.09;"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:#38c8f0;opacity:0.07;"></div>
+    </div>
+    <div class="deco-shape" data-speed="0.03" style="width:220px;height:220px;border:1px solid rgba(124,109,255,0.07);border-radius:18px;top:10%;right:5%;transform:rotate(15deg);"></div>
+    <div class="content">
+        <div class="reveal" style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1.2rem;">
+            <span style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#7c6dff;font-weight:600;">01 — Contexto</span>
+        </div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;margin-bottom:0.4rem;">Crisis silenciosa en España</h2>
+        <p class="reveal" style="color:#7a85a3;font-size:0.95rem;margin-bottom:1.8rem;">El malestar emocional se ha convertido en la primera causa de baja laboral y la mayor brecha asistencial del sistema sanitario español.</p>
+        <div class="reveal" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.6rem;">
+            <div class="metric-card" style="text-align:center;">
+                <div style="font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#7c6dff,#38c8f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">34%</div>
+                <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.3rem;line-height:1.4;">Población con algún problema de salud mental activo</div>
+            </div>
+            <div class="metric-card" style="text-align:center;">
+                <div style="font-size:2.2rem;font-weight:900;color:#f0a842;">59%</div>
+                <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.3rem;line-height:1.4;">Sufre estrés laboral de moderado a severo</div>
+            </div>
+            <div class="metric-card" style="text-align:center;">
+                <div style="font-size:2.2rem;font-weight:900;color:#38c8f0;">73%</div>
+                <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.3rem;line-height:1.4;">Aumento búsqueda apoyo psicológico desde 2020</div>
+            </div>
+            <div class="metric-card" style="text-align:center;">
+                <div style="font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#f0a842,#7c6dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">48%</div>
+                <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.3rem;line-height:1.4;">Población busca apoyo profesional activamente</div>
+            </div>
+        </div>
+        <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="glass-card accent-border-l" style="padding:1rem 1rem 1rem 1.2rem;">
+                <div style="font-size:0.8rem;font-weight:600;color:#f0f4ff;margin-bottom:0.4rem;">🧠 Brecha asistencial crítica</div>
+                <div style="font-size:0.78rem;color:#7a85a3;line-height:1.5;">España tiene <strong style="color:#7c6dff;">6 psicólogos por 100.000 hab.</strong> frente a los 18 recomendados por la OMS. Lista de espera media: <strong style="color:#38c8f0;">4–6 meses</strong> en el sistema público.</div>
+            </div>
+            <div class="glass-card accent-border-l-2" style="padding:1rem 1rem 1rem 1.2rem;">
+                <div style="font-size:0.8rem;font-weight:600;color:#f0f4ff;margin-bottom:0.4rem;">💼 Impacto económico directo</div>
+                <div style="font-size:0.78rem;color:#7a85a3;line-height:1.5;">El absentismo por salud mental cuesta a la economía española <strong style="color:#f0a842;">€12.000M anuales</strong>. Los problemas emocionales son ya la 1.ª causa de baja laboral.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 3: TAMAÑO DE MERCADO ======= -->
+<div class="slide" data-slide="3">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:400px;height:400px;top:-90px;right:-90px;background:#38c8f0;opacity:0.08;"></div>
+        <div class="blob" style="width:280px;height:280px;bottom:-70px;left:-50px;background:#7c6dff;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div class="reveal" style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;">
+            <span style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#38c8f0;font-weight:600;">02 — Tamaño de Mercado</span>
+        </div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.7rem,3.2vw,2.6rem);font-weight:700;margin-bottom:0.3rem;">Tres nichos. Un mercado combinado de <span style="color:#38c8f0;">$4.188M</span> en España</h2>
+        <p class="reveal" style="color:#7a85a3;font-size:0.9rem;margin-bottom:1.4rem;">Proyecciones a 2030–2034 con CAGRs superiores al 14% en todos los segmentos.</p>
+
+        <!-- Bar Chart animado -->
+        <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:end;">
+            <!-- Barras -->
+            <div>
+                <div style="font-size:0.75rem;color:#7a85a3;margin-bottom:0.8rem;font-weight:500;">Valor de mercado 2025 (USD Millones)</div>
+                <div class="bar-chart-h" style="display:flex;flex-direction:column;gap:0.7rem;">
+                    <div style="display:grid;grid-template-columns:160px 1fr 60px;gap:0.5rem;align-items:center;">
+                        <div style="font-size:0.75rem;color:#c4cbdf;">Digital Mental Health</div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="80" style="background:linear-gradient(90deg,#7c6dff,#a89bff);"></div></div>
+                        <div style="font-size:0.8rem;font-weight:700;color:#7c6dff;text-align:right;">$420M</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:160px 1fr 60px;gap:0.5rem;align-items:center;">
+                        <div style="font-size:0.75rem;color:#c4cbdf;">Mental Health Apps</div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="58" style="background:linear-gradient(90deg,#38c8f0,#7c6dff);"></div></div>
+                        <div style="font-size:0.8rem;font-weight:700;color:#38c8f0;text-align:right;">$255M</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:160px 1fr 60px;gap:0.5rem;align-items:center;">
+                        <div style="font-size:0.75rem;color:#c4cbdf;">Wellness Apps</div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="48" style="background:linear-gradient(90deg,#f0a842,#38c8f0);"></div></div>
+                        <div style="font-size:0.8rem;font-weight:700;color:#f0a842;text-align:right;">$238M</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:160px 1fr 60px;gap:0.5rem;align-items:center;">
+                        <div style="font-size:0.75rem;color:#c4cbdf;">Corporate Wellness</div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="100" style="background:linear-gradient(90deg,#f0a842,#7c6dff);"></div></div>
+                        <div style="font-size:0.8rem;font-weight:700;color:#f0a842;text-align:right;">$1.207M</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:160px 1fr 60px;gap:0.5rem;align-items:center;">
+                        <div style="font-size:0.75rem;color:#c4cbdf;">Psicología clínica</div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="65" style="background:linear-gradient(90deg,#a89bff,#38c8f0);"></div></div>
+                        <div style="font-size:0.8rem;font-weight:700;color:#a89bff;text-align:right;">$2.068M</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Tabla CAGR -->
+            <div>
+                <div style="font-size:0.75rem;color:#7a85a3;margin-bottom:0.8rem;font-weight:500;">Crecimiento proyectado (CAGR)</div>
+                <div style="display:flex;flex-direction:column;gap:0.55rem;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.4rem;padding:0.5rem;border-radius:8px;background:rgba(124,109,255,0.08);">
+                        <div style="font-size:0.72rem;color:#7a85a3;">Segmento</div>
+                        <div style="font-size:0.72rem;color:#7a85a3;">CAGR</div>
+                        <div style="font-size:0.72rem;color:#7a85a3;">Al año</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.4rem;padding:0.45rem 0.5rem;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(124,109,255,0.15);">
+                        <div style="font-size:0.78rem;color:#c4cbdf;">Digital MH</div>
+                        <div style="font-size:0.82rem;font-weight:700;color:#7c6dff;">18.54%</div>
+                        <div style="font-size:0.72rem;color:#7a85a3;">→ 2030</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.4rem;padding:0.45rem 0.5rem;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(56,200,240,0.15);">
+                        <div style="font-size:0.78rem;color:#c4cbdf;">MH Apps</div>
+                        <div style="font-size:0.82rem;font-weight:700;color:#38c8f0;">15.49%</div>
+                        <div style="font-size:0.72rem;color:#7a85a3;">→ 2035</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.4rem;padding:0.45rem 0.5rem;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(240,168,66,0.15);">
+                        <div style="font-size:0.78rem;color:#c4cbdf;">Wellness Apps</div>
+                        <div style="font-size:0.82rem;font-weight:700;color:#f0a842;">15.7%</div>
+                        <div style="font-size:0.72rem;color:#7a85a3;">→ 2030</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.4rem;padding:0.45rem 0.5rem;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(168,155,255,0.15);">
+                        <div style="font-size:0.78rem;color:#c4cbdf;">Corp. Wellness</div>
+                        <div style="font-size:0.82rem;font-weight:700;color:#a89bff;">5.86%</div>
+                        <div style="font-size:0.72rem;color:#7a85a3;">→ 2034</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 4: SAM / SOM ======= -->
+<div class="slide" data-slide="4">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:350px;height:350px;top:-70px;left:-70px;background:#f0a842;opacity:0.07;"></div>
+        <div class="blob" style="width:280px;height:280px;bottom:-60px;right:-50px;background:#7c6dff;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#f0a842;font-weight:600;margin-bottom:0.8rem;">03 — TAM · SAM · SOM</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.7rem,3.2vw,2.5rem);font-weight:700;margin-bottom:1.2rem;">Embudo de mercado real y alcanzable</h2>
+        <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:center;">
+            <!-- Pirámide visual -->
+            <div style="text-align:center;">
+                <!-- TAM -->
+                <div style="background:linear-gradient(135deg,rgba(124,109,255,0.18),rgba(56,200,240,0.1));border:1px solid rgba(124,109,255,0.25);border-radius:12px;padding:1.1rem;margin-bottom:0.5rem;position:relative;">
+                    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:#7c6dff;font-weight:600;">TAM — Mercado Total Disponible</div>
+                    <div style="font-size:2rem;font-weight:900;color:#7c6dff;margin:0.2rem 0;">$4.188M</div>
+                    <div style="font-size:0.72rem;color:#7a85a3;">España: Digital MH + Wellness + Corporate</div>
+                </div>
+                <!-- Flecha -->
+                <div style="display:flex;justify-content:center;margin:0.3rem 0;"><svg width="14" height="22" viewBox="0 0 14 22"><path d="M7 0 L7 16 M2 11 L7 18 L12 11" stroke="#7c6dff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+                <!-- SAM -->
+                <div style="background:linear-gradient(135deg,rgba(56,200,240,0.14),rgba(240,168,66,0.08));border:1px solid rgba(56,200,240,0.22);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
+                    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:#38c8f0;font-weight:600;">SAM — Mercado Servible</div>
+                    <div style="font-size:1.7rem;font-weight:900;color:#38c8f0;margin:0.2rem 0;">$854M</div>
+                    <div style="font-size:0.72rem;color:#7a85a3;">Usuarios digitales activos + empresas objetivo</div>
+                </div>
+                <div style="display:flex;justify-content:center;margin:0.3rem 0;"><svg width="14" height="22" viewBox="0 0 14 22"><path d="M7 0 L7 16 M2 11 L7 18 L12 11" stroke="#38c8f0" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+                <!-- SOM -->
+                <div style="background:linear-gradient(135deg,rgba(240,168,66,0.14),rgba(124,109,255,0.08));border:1px solid rgba(240,168,66,0.22);border-radius:12px;padding:1rem;">
+                    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:#f0a842;font-weight:600;">SOM — Objetivo Año 1–3</div>
+                    <div style="font-size:1.5rem;font-weight:900;color:#f0a842;margin:0.2rem 0;">$8.5M–$42M</div>
+                    <div style="font-size:0.72rem;color:#7a85a3;">1% del SAM en 3 años = escenario conservador</div>
+                </div>
+            </div>
+            <!-- Métricas de apoyo -->
+            <div style="display:flex;flex-direction:column;gap:0.8rem;">
+                <div class="glass-card accent-border-l-3" style="padding:0.9rem 0.9rem 0.9rem 1.1rem;">
+                    <div style="font-size:0.78rem;font-weight:600;color:#f0a842;margin-bottom:0.3rem;">🎯 Población objetivo primaria</div>
+                    <div style="font-size:1.1rem;font-weight:800;color:#f0f4ff;">8.2M personas</div>
+                    <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.2rem;">18–45 años, smartphone activo, afectación emocional confirmada o estrés laboral</div>
+                </div>
+                <div class="glass-card accent-border-l-2" style="padding:0.9rem 0.9rem 0.9rem 1.1rem;">
+                    <div style="font-size:0.78rem;font-weight:600;color:#38c8f0;margin-bottom:0.3rem;">🏢 Empresas B2B alcanzables (año 1)</div>
+                    <div style="font-size:1.1rem;font-weight:800;color:#f0f4ff;">1.200 empresas</div>
+                    <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.2rem;">50–500 empleados, sectores alta rotación: tech, retail, salud, banca</div>
+                </div>
+                <div class="glass-card accent-border-l" style="padding:0.9rem 0.9rem 0.9rem 1.1rem;">
+                    <div style="font-size:0.78rem;font-weight:600;color:#7c6dff;margin-bottom:0.3rem;">📈 Expansión iberoamericana</div>
+                    <div style="font-size:1.1rem;font-weight:800;color:#f0f4ff;">TAM +$28.000M</div>
+                    <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.2rem;">LATAM (México, Colombia, Argentina) abre un segundo mercado con misma propuesta de valor</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 5: COMPORTAMIENTO DEL USUARIO ======= -->
+<div class="slide" data-slide="5">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:380px;height:380px;top:-80px;right:-80px;background:#7c6dff;opacity:0.09;"></div>
+        <div class="blob" style="width:240px;height:240px;bottom:-50px;left:-40px;background:#f0a842;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#7c6dff;font-weight:600;margin-bottom:0.8rem;">04 — Comportamiento del Usuario</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;margin-bottom:1.2rem;">La demanda digital de apoyo emocional es masiva y creciente</h2>
+
+        <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem;">
+            <div class="metric-card" style="text-align:center;padding:1rem;">
+                <div style="font-size:2rem;font-weight:900;color:#7c6dff;">47%</div>
+                <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.3rem;">Prefiere soporte IA inmediato vs. esperar cita</div>
+            </div>
+            <div class="metric-card" style="text-align:center;padding:1rem;">
+                <div style="font-size:2rem;font-weight:900;color:#38c8f0;">62%</div>
+                <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.3rem;">Mayor engagement con contenido personalizado</div>
+            </div>
+            <div class="metric-card" style="text-align:center;padding:1rem;">
+                <div style="font-size:2rem;font-weight:900;color:#f0a842;">67%</div>
+                <div style="font-size:0.72rem;color:#7a85a3;margin-top:0.3rem;">Empleados sin wellness desearían tenerlo</div>
+            </div>
+        </div>
+
+        <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <!-- Donut Chart: segmentos de edad -->
+            <div class="glass-card" style="padding:1rem;">
+                <div style="font-size:0.78rem;font-weight:600;color:#c4cbdf;margin-bottom:0.8rem;text-align:center;">Demanda por franja de edad</div>
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <svg width="100" height="100" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="16"/>
+                        <!-- 18-35: 42% -->
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#7c6dff" stroke-width="16" stroke-dasharray="105.5 145.6" stroke-dashoffset="62.8" stroke-linecap="round" class="donut-ring" data-percent="42" style="stroke-dashoffset:auto;stroke-dasharray:251.3;"/>
+                        <!-- 35-50: 35% -->
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#38c8f0" stroke-width="16" stroke-dasharray="87.95 163.35" stroke-dashoffset="-105.5" stroke-linecap="round"/>
+                        <!-- 50+: 23% -->
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#f0a842" stroke-width="16" stroke-dasharray="57.8 193.5" stroke-dashoffset="-193.45" stroke-linecap="round"/>
+                        <text x="50" y="48" text-anchor="middle" fill="#f0f4ff" font-size="13" font-weight="700" font-family="DM Sans">42%</text>
+                        <text x="50" y="61" text-anchor="middle" fill="#7a85a3" font-size="7">18–35</text>
+                    </svg>
+                    <div style="font-size:0.72rem;display:flex;flex-direction:column;gap:0.4rem;">
+                        <div style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;background:#7c6dff;border-radius:50%;display:inline-block;"></span><span style="color:#c4cbdf;">18–35 años: <strong style="color:#7c6dff;">42%</strong></span></div>
+                        <div style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;background:#38c8f0;border-radius:50%;display:inline-block;"></span><span style="color:#c4cbdf;">35–50 años: <strong style="color:#38c8f0;">35%</strong></span></div>
+                        <div style="display:flex;align-items:center;gap:0.4rem;"><span style="width:10px;height:10px;background:#f0a842;border-radius:50%;display:inline-block;"></span><span style="color:#c4cbdf;">50+ años: <strong style="color:#f0a842;">23%</strong></span></div>
+                        <div style="margin-top:0.4rem;color:#7a85a3;font-size:0.68rem;">Los jóvenes lideran la adopción digital</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Barreras -->
+            <div class="glass-card" style="padding:1rem;">
+                <div style="font-size:0.78rem;font-weight:600;color:#c4cbdf;margin-bottom:0.8rem;">Principales barreras al acceso tradicional</div>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-bottom:0.25rem;"><span style="color:#c4cbdf;">Listas de espera</span><span style="color:#7c6dff;font-weight:700;">82%</span></div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="82" style="background:#7c6dff;"></div></div>
+                    </div>
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-bottom:0.25rem;"><span style="color:#c4cbdf;">Coste económico</span><span style="color:#38c8f0;font-weight:700;">74%</span></div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="74" style="background:#38c8f0;"></div></div>
+                    </div>
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-bottom:0.25rem;"><span style="color:#c4cbdf;">Estigma social</span><span style="color:#f0a842;font-weight:700;">56%</span></div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="56" style="background:#f0a842;"></div></div>
+                    </div>
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-bottom:0.25rem;"><span style="color:#c4cbdf;">Horarios inflexibles</span><span style="color:#a89bff;font-weight:700;">51%</span></div>
+                        <div class="hbar-track"><div class="hbar-fill" data-width="51" style="background:#a89bff;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 6: FLUJO DEL SERVICIO ======= -->
+<div class="slide" data-slide="6">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:350px;height:350px;top:-80px;left:-60px;background:#38c8f0;opacity:0.08;"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-50px;right:-40px;background:#7c6dff;opacity:0.08;"></div>
+    </div>
+    <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#38c8f0;font-weight:600;margin-bottom:0.8rem;">05 — Modelo de Servicio</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;margin-bottom:1.4rem;">Flujo de experiencia CONSTELLia</h2>
+        <!-- Flowchart horizontal -->
+        <div class="reveal" style="display:grid;grid-template-columns:repeat(5,1fr) 40px repeat(2,1fr);gap:0;align-items:center;">
+            <!-- Paso 1 -->
+            <div style="text-align:center;">
+                <div style="background:linear-gradient(135deg,#7c6dff,#a89bff);border-radius:12px;padding:0.8rem 0.5rem;margin-bottom:0.5rem;">
+                    <div style="font-size:1.4rem;">🧩</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#fff;margin-top:0.3rem;">Diagnóstico<br>IA sistémico</div>
+                </div>
+                <div style="font-size:0.65rem;color:#7a85a3;line-height:1.4;">Evaluación de patrones emocionales, relacionales y contextuales</div>
+            </div>
+            <!-- Flecha -->
+            <div style="display:flex;align-items:center;justify-content:center;"><svg width="22" height="14" viewBox="0 0 22 14"><path d="M0 7 L16 7 M10 2 L18 7 L10 12" stroke="#7c6dff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <!-- Paso 2 -->
+            <div style="text-align:center;">
+                <div style="background:linear-gradient(135deg,#38c8f0,#7c6dff);border-radius:12px;padding:0.8rem 0.5rem;margin-bottom:0.5rem;">
+                    <div style="font-size:1.4rem;">🤖</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#fff;margin-top:0.3rem;">Sesión con<br>IA + humano</div>
+                </div>
+                <div style="font-size:0.65rem;color:#7a85a3;line-height:1.4;">Combinación IA empática + facilitador certificado en tiempo real</div>
+            </div>
+            <!-- Flecha -->
+            <div style="display:flex;align-items:center;justify-content:center;"><svg width="22" height="14" viewBox="0 0 22 14"><path d="M0 7 L16 7 M10 2 L18 7 L10 12" stroke="#38c8f0" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <!-- Paso 3 -->
+            <div style="text-align:center;">
+                <div style="background:linear-gradient(135deg,#f0a842,#38c8f0);border-radius:12px;padding:0.8rem 0.5rem;margin-bottom:0.5rem;">
+                    <div style="font-size:1.4rem;">🎬</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#fff;margin-top:0.3rem;">Vídeo<br>personalizado</div>
+                </div>
+                <div style="font-size:0.65rem;color:#7a85a3;line-height:1.4;">Avatar IA genera contenido terapéutico adaptado al perfil</div>
+            </div>
+            <!-- Flecha -->
+            <div style="display:flex;align-items:center;justify-content:center;"><svg width="22" height="14" viewBox="0 0 22 14"><path d="M0 7 L16 7 M10 2 L18 7 L10 12" stroke="#f0a842" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <!-- Paso 4 -->
+            <div style="text-align:center;">
+                <div style="background:linear-gradient(135deg,#a89bff,#f0a842);border-radius:12px;padding:0.8rem 0.5rem;margin-bottom:0.5rem;">
+                    <div style="font-size:1.4rem;">📊</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#fff;margin-top:0.3rem;">Seguimiento<br>continuo</div>
+                </div>
+                <div style="font-size:0.65rem;color:#7a85a3;line-height:1.4;">Dashboard de progreso + alertas predictivas + ajuste terapéutico</div>
+            </div>
+            <!-- Flecha -->
+            <div style="display:flex;align-items:center;justify-content:center;"><svg width="22" height="14" viewBox="0 0 22 14"><path d="M0 7 L16 7 M10 2 L18 7 L10 12" stroke="#a89bff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <!-- Paso 5 -->
+            <div style="text-align:center;">
+                <div style="background:linear-gradient(135deg,#7c6dff,#38c8f0);border-radius:12px;padding:0.8rem 0.5rem;margin-bottom:0.5rem;">
+                    <div style="font-size:1.4rem;">🌱</div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#fff;margin-top:0.3rem;">Plan<br>evolutivo</div>
+                </div>
+                <div style="font-size:0.65rem;color:#7a85a3;line-height:1.4;">Sistema recalibra el mapa sistémico y ajusta el plan de bienestar</div>
+            </div>
+        </div>
+
+        <!-- Diferenciadores -->
+        <div class="reveal" style="margin-top:1.2rem;display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;">
+            <div style="background:rgba(124,109,255,0.08);border:1px solid rgba(124,109,255,0.18);border-radius:10px;padding:0.7rem 0.8rem;">
+                <span style="font-size:0.72rem;font-weight:700;color:#7c6dff;">✦ Diferenciador único:</span>
+                <span style="font-size:0.72rem;color:#c4cbdf;margin-left:0.3rem;">Único servicio con perspectiva sistémica + IA + humano en España</span>
+            </div>
+            <div style="background:rgba(56,200,240,0.08);border:1px solid rgba(56,200,240,0.18);border-radius:10px;padding:0.7rem 0.8rem;">
+                <span style="font-size:0.72rem;font-weight:700;color:#38c8f0;">⚡ Disponibilidad:</span>
+                <span style="font-size:0.72rem;color:#c4cbdf;margin-left:0.3rem;">24/7 — sin listas de espera, respuesta en &lt;2 min</span>
+            </div>
+            <div style="background:rgba(240,168,66,0.08);border:1px solid rgba(240,168,66,0.18);border-radius:10px;padding:0.7rem 0.8rem;">
+                <span style="font-size:0.72rem;font-weight:700;color:#f0a842;">🎯 Coste:</span>
+                <span style="font-size:0.72rem;color:#c4cbdf;margin-left:0.3rem;">4–5× más económico que terapia presencial tradicional</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 7: ANÁLISIS COMPETITIVO ======= -->
+<div class="slide" data-slide="7">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:360px;height:360px;top:-80px;right:-70px;background:#7c6dff;opacity:0.08;"></div>
+        <div class="blob" style="width:250px;height:250px;bottom:-50px;left:-40px;background:#38c8f0;opacity:0.07;"></div>
+    </div>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#7c6dff;font-weight:600;margin-bottom:0.8rem;">06 — Competitive Landscape</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,2.8vw,2.3rem);font-weight:700;margin-bottom:1rem;">El gap que CONSTELLia ocupa</h2>
+
+        <div class="reveal" style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.74rem;">
+                <thead>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                        <th style="text-align:left;padding:0.5rem 0.6rem;color:#7a85a3;font-weight:500;">Competidor</th>
+                        <th style="padding:0.5rem 0.4rem;color:#7a85a3;font-weight:500;">IA sistémica</th>
+                        <th style="padding:0.5rem 0.4rem;color:#7a85a3;font-weight:500;">Humano</th>
+                        <th style="padding:0.5rem 0.4rem;color:#7a85a3;font-weight:500;">Vídeo pers.</th>
+                        <th style="padding:0.5rem 0.4rem;color:#7a85a3;font-weight:500;">B2C+B2B</th>
+                        <th style="padding:0.5rem 0.4rem;color:#7a85a3;font-weight:500;">Precio/sesión</th>
+                        <th style="padding:0.5rem 0.4rem;color:#7a85a3;font-weight:500;">Espera</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(124,109,255,0.08);">
+                        <td style="padding:0.55rem 0.6rem;font-weight:700;color:#a89bff;">✦ CONSTELLia</td>
+                        <td style="text-align:center;padding:0.55rem 0.4rem;color:#7c6dff;font-weight:700;">✓ Sist.</td>
+                        <td style="text-align:center;padding:0.55rem 0.4rem;color:#38c8f0;">✓</td>
+                        <td style="text-align:center;padding:0.55rem 0.4rem;color:#38c8f0;">✓</td>
+                        <td style="text-align:center;padding:0.55rem 0.4rem;color:#38c8f0;">✓</td>
+                        <td style="text-align:center;padding:0.55rem 0.4rem;color:#f0a842;font-weight:600;">€15–25</td>
+                        <td style="text-align:center;padding:0.55rem 0.4rem;color:#38c8f0;">Inmediato</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <td style="padding:0.55rem 0.6rem;color:#c4cbdf;">Terapia presencial</td>
+                        <td style="text-align:center;color:#7a85a3;">✗</td>
+                        <td style="text-align:center;color:#38c8f0;">✓</td>
+                        <td style="text-align:center;color:#7a85a3;">✗</td>
+                        <td style="text-align:center;color:#7a85a3;">✗</td>
+                        <td style="text-align:center;color:#7a85a3;">€70–120</td>
+                        <td style="text-align:center;color:#e05555;">4–6 meses</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <td style="padding:0.55rem 0.6rem;color:#c4cbdf;">TherapyChat / ifeel</td>
+                        <td style="text-align:center;color:#7a85a3;">Parcial</td>
+                        <td style="text-align:center;color:#38c8f0;">✓</td>
+                        <td style="text-align:center;color:#7a85a3;">✗</td>
+                        <td style="text-align:center;color:#f0a842;">B2B</td>
+                        <td style="text-align:center;color:#7a85a3;">€40–80</td>
+                        <td style="text-align:center;color:#f0a842;">1–7 días</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <td style="padding:0.55rem 0.6rem;color:#c4cbdf;">Headspace / Calm</td>
+                        <td style="text-align:center;color:#7a85a3;">✗</td>
+                        <td style="text-align:center;color:#7a85a3;">✗</td>
+                        <td style="text-align:center;color:#7a85a3;">✗</td>
+                        <td style="text-align:center;color:#38c8f0;">✓</td>
+                        <td style="text-align:center;color:#7a85a3;">€8–15/mes</td>
+                        <td style="text-align:center;color:#38c8f0;">Inmediato</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0.55rem 0.6rem;color:#c4cbdf;">BetterHelp / Woebot</td>
+                        <td style="text-align:center;color:#f0a842;">IA básica</td>
+                        <td style="text-align:center;color:#f0a842;">Parcial</td>
+                        <td style="text-align:center;color:#7a85a3;">✗</td>
+                        <td style="text-align:center;color:#38c8f0;">✓</td>
+                        <td style="text-align:center;color:#7a85a3;">€40–70</td>
+                        <td style="text-align:center;color:#f0a842;">1–3 días</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="reveal" style="margin-top:0.8rem;background:linear-gradient(135deg,rgba(124,109,255,0.1),rgba(56,200,240,0.06));border:1px solid rgba(124,109,255,0.2);border-radius:10px;padding:0.7rem 1rem;">
+            <span style="font-size:0.78rem;font-weight:600;color:#7c6dff;">🏆 Ventaja competitiva clave:</span>
+            <span style="font-size:0.78rem;color:#c4cbdf;margin-left:0.4rem;">Ningún competidor combina <strong style="color:#a89bff;">perspectiva sistémica</strong> + <strong style="color:#38c8f0;">facilitador humano</strong> + <strong style="color:#f0a842;">vídeo personalizado IA</strong> + precio accesible. CONSTELLia crea su propia categoría.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 8: MODELO DE NEGOCIO ======= -->
+<div class="slide" data-slide="8">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:380px;height:380px;top:-80px;left:-70px;background:#f0a842;opacity:0.07;"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-50px;right:-40px;background:#7c6dff;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#f0a842;font-weight:600;margin-bottom:0.8rem;">07 — Modelo de Negocio</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;margin-bottom:1.2rem;">Monetización multi-canal con margen &gt;90%</h2>
+        <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem;">
+            <div class="glass-card" style="border-top:2px solid #7c6dff;">
+                <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#7c6dff;font-weight:700;margin-bottom:0.5rem;">B2C — Suscripción</div>
+                <div style="font-size:1.5rem;font-weight:900;color:#f0f4ff;margin-bottom:0.3rem;">€19–49/mes</div>
+                <div style="font-size:0.72rem;color:#7a85a3;line-height:1.5;margin-bottom:0.6rem;">Acceso ilimitado IA + 2 sesiones facilitador/mes + vídeos personalizados</div>
+                <div style="font-size:0.7rem;color:#7c6dff;">LTV estimado: <strong>€342–882</strong></div>
+            </div>
+            <div class="glass-card" style="border-top:2px solid #38c8f0;">
+                <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#38c8f0;font-weight:700;margin-bottom:0.5rem;">B2B — Empresa</div>
+                <div style="font-size:1.5rem;font-weight:900;color:#f0f4ff;margin-bottom:0.3rem;">€12–22/emp/mes</div>
+                <div style="font-size:0.72rem;color:#7a85a3;line-height:1.5;margin-bottom:0.6rem;">Pack wellness corporativo: dashboard métricas, sesiones grupales, reportes HR</div>
+                <div style="font-size:0.7rem;color:#38c8f0;">Ticket medio empresa: <strong>€1.800–4.400/mes</strong></div>
+            </div>
+            <div class="glass-card" style="border-top:2px solid #f0a842;">
+                <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#f0a842;font-weight:700;margin-bottom:0.5rem;">B2B2C — Seguros/Mutuas</div>
+                <div style="font-size:1.5rem;font-weight:900;color:#f0f4ff;margin-bottom:0.3rem;">Revenue share</div>
+                <div style="font-size:0.72rem;color:#7a85a3;line-height:1.5;margin-bottom:0.6rem;">Integración como beneficio en pólizas de salud, EAP empresariales, mutualidades</div>
+                <div style="font-size:0.7rem;color:#f0a842;">Canal de volumen: <strong>10k+ usuarios/contrato</strong></div>
+            </div>
+        </div>
+        <!-- Unit economics -->
+        <div class="reveal" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:0.9rem 1rem;">
+            <div style="font-size:0.75rem;font-weight:600;color:#c4cbdf;margin-bottom:0.7rem;">Unit Economics clave</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.6rem;text-align:center;">
+                <div><div style="font-size:1.1rem;font-weight:800;color:#7c6dff;">€0.45–0.75</div><div style="font-size:0.62rem;color:#7a85a3;margin-top:0.15rem;">Coste por<br>usuario/mes</div></div>
+                <div style="border-left:1px solid rgba(255,255,255,0.07);"></div>
+                <div><div style="font-size:1.1rem;font-weight:800;color:#38c8f0;">&gt;90%</div><div style="font-size:0.62rem;color:#7a85a3;margin-top:0.15rem;">Margen bruto<br>automatizado</div></div>
+                <div style="border-left:1px solid rgba(255,255,255,0.07);"></div>
+                <div><div style="font-size:1.1rem;font-weight:800;color:#f0a842;">€300–750</div><div style="font-size:0.62rem;color:#7a85a3;margin-top:0.15rem;">Costes fijos<br>mensuales</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 9: PROYECCIÓN FINANCIERA ======= -->
+<div class="slide" data-slide="9">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:360px;height:360px;top:-80px;right:-80px;background:#38c8f0;opacity:0.08;"></div>
+        <div class="blob" style="width:240px;height:240px;bottom:-50px;left:-40px;background:#f0a842;opacity:0.07;"></div>
+    </div>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#38c8f0;font-weight:600;margin-bottom:0.8rem;">08 — Proyección Financiera</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;margin-bottom:1.2rem;">Escenario de crecimiento 2026–2028</h2>
+        <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+            <!-- Tabla proyección -->
+            <div>
+                <div style="font-size:0.75rem;color:#7a85a3;margin-bottom:0.7rem;font-weight:500;">Proyección conservadora vs. optimista</div>
+                <table style="width:100%;border-collapse:collapse;font-size:0.73rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                            <th style="text-align:left;padding:0.45rem 0.4rem;color:#7a85a3;font-weight:500;">Año</th>
+                            <th style="padding:0.45rem 0.4rem;color:#7a85a3;font-weight:500;">Usuarios activos</th>
+                            <th style="padding:0.45rem 0.4rem;color:#7a85a3;font-weight:500;">ARR (conserv.)</th>
+                            <th style="padding:0.45rem 0.4rem;color:#7a85a3;font-weight:500;">ARR (optim.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.45rem 0.4rem;color:#c4cbdf;font-weight:600;">2026</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#7c6dff;">500–1.200</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#38c8f0;">€114K</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#f0a842;">€706K</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.45rem 0.4rem;color:#c4cbdf;font-weight:600;">2027</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#7c6dff;">3.500–12.000</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#38c8f0;">€800K</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#f0a842;">€7.1M</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.45rem 0.4rem;color:#c4cbdf;font-weight:600;">2028</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#7c6dff;">18.000–60.000</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#38c8f0;">€4.1M</td>
+                            <td style="text-align:center;padding:0.45rem 0.4rem;color:#f0a842;">€35.3M</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- Grafica ARR -->
+                <div style="margin-top:1rem;">
+                    <div style="font-size:0.72rem;color:#7a85a3;margin-bottom:0.5rem;">ARR proyectado (escenario conservador)</div>
+                    <div class="bar-chart" style="height:80px;">
+                        <div class="bar-col"><div class="bar" data-height="28" style="background:linear-gradient(to top,#7c6dff,#a89bff);"></div><div style="font-size:0.6rem;color:#7a85a3;">2026</div></div>
+                        <div class="bar-col"><div class="bar" data-height="60" style="background:linear-gradient(to top,#38c8f0,#7c6dff);"></div><div style="font-size:0.6rem;color:#7a85a3;">2027</div></div>
+                        <div class="bar-col"><div class="bar" data-height="100" style="background:linear-gradient(to top,#f0a842,#38c8f0);"></div><div style="font-size:0.6rem;color:#7a85a3;">2028</div></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Hitos y supuestos -->
+            <div>
+                <div style="font-size:0.75rem;color:#7a85a3;margin-bottom:0.7rem;font-weight:500;">Supuestos clave del modelo</div>
+                <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                    <div class="glass-card accent-border-l" style="padding:0.7rem 0.7rem 0.7rem 0.9rem;">
+                        <div style="font-size:0.72rem;font-weight:600;color:#7c6dff;">CAC estimado</div>
+                        <div style="font-size:0.78rem;color:#c4cbdf;margin-top:0.15rem;">€12–35 (digital) · €200–450 (B2B)</div>
+                    </div>
+                    <div class="glass-card accent-border-l-2" style="padding:0.7rem 0.7rem 0.7rem 0.9rem;">
+                        <div style="font-size:0.72rem;font-weight:600;color:#38c8f0;">Churn mensual</div>
+                        <div style="font-size:0.78rem;color:#c4cbdf;margin-top:0.15rem;">3–5% B2C · &lt;1% B2B (contratos anuales)</div>
+                    </div>
+                    <div class="glass-card accent-border-l-3" style="padding:0.7rem 0.7rem 0.7rem 0.9rem;">
+                        <div style="font-size:0.72rem;font-weight:600;color:#f0a842;">Payback period</div>
+                        <div style="font-size:0.78rem;color:#c4cbdf;margin-top:0.15rem;">&lt;3 meses B2C · &lt;6 meses B2B</div>
+                    </div>
+                    <div class="glass-card accent-border-l" style="padding:0.7rem 0.7rem 0.7rem 0.9rem;">
+                        <div style="font-size:0.72rem;font-weight:600;color:#7c6dff;">Break-even</div>
+                        <div style="font-size:0.78rem;color:#c4cbdf;margin-top:0.15rem;">~450 usuarios suscritos activos (mes 8–12)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 10: REGULACIÓN Y RIESGOS ======= -->
+<div class="slide" data-slide="10">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:350px;height:350px;top:-80px;left:-60px;background:#7c6dff;opacity:0.08;"></div>
+        <div class="blob" style="width:240px;height:240px;bottom:-50px;right:-40px;background:#38c8f0;opacity:0.07;"></div>
+    </div>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#7c6dff;font-weight:600;margin-bottom:0.8rem;">09 — Regulación y Riesgos</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;margin-bottom:1.2rem;">Marco regulatorio favorable + riesgos mitigables</h2>
+        <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;">
+            <div>
+                <div style="font-size:0.78rem;font-weight:600;color:#38c8f0;margin-bottom:0.7rem;">✅ Vientos de cola regulatorios</div>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div class="glass-card" style="padding:0.65rem 0.8rem;">
+                        <div style="font-size:0.75rem;font-weight:600;color:#f0f4ff;">Plan de Salud Mental 2025–2027</div>
+                        <div style="font-size:0.68rem;color:#7a85a3;margin-top:0.15rem;">€39M adicionales para digitalización; el gobierno avala las plataformas digitales de salud mental</div>
+                    </div>
+                    <div class="glass-card" style="padding:0.65rem 0.8rem;">
+                        <div style="font-size:0.75rem;font-weight:600;color:#f0f4ff;">EU AI Act — Categoría de Bajo Riesgo</div>
+                        <div style="font-size:0.68rem;color:#7a85a3;margin-top:0.15rem;">Chatbots de apoyo emocional no clínico clasificados como bajo riesgo; menos fricción regulatoria</div>
+                    </div>
+                    <div class="glass-card" style="padding:0.65rem 0.8rem;">
+                        <div style="font-size:0.75rem;font-weight:600;color:#f0f4ff;">Digitalización de telemedicina</div>
+                        <div style="font-size:0.68rem;color:#7a85a3;margin-top:0.15rem;">€215M para salud digital; normativas que facilitan cobertura de plataformas por seguros</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div style="font-size:0.78rem;font-weight:600;color:#e05555;margin-bottom:0.7rem;">⚠️ Riesgos y mitigación</div>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div class="glass-card" style="padding:0.65rem 0.8rem;border-left:2px solid #e05555;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.15rem;">
+                            <div style="font-size:0.75rem;font-weight:600;color:#f0f4ff;">Privacidad de datos (RGPD)</div>
+                            <span style="font-size:0.6rem;background:rgba(240,168,66,0.15);color:#f0a842;padding:0.1rem 0.4rem;border-radius:4px;">Medio</span>
+                        </div>
+                        <div style="font-size:0.68rem;color:#7a85a3;">Mitigación: cifrado E2E, datos en servidores UE, DPO desde día 0</div>
+                    </div>
+                    <div class="glass-card" style="padding:0.65rem 0.8rem;border-left:2px solid #f0a842;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.15rem;">
+                            <div style="font-size:0.75rem;font-weight:600;color:#f0f4ff;">Competencia de grandes plataformas</div>
+                            <span style="font-size:0.6rem;background:rgba(240,168,66,0.15);color:#f0a842;padding:0.1rem 0.4rem;border-radius:4px;">Medio</span>
+                        </div>
+                        <div style="font-size:0.68rem;color:#7a85a3;">Mitigación: nicho sistémico + facilitador humano difícil de replicar; IP protegible</div>
+                    </div>
+                    <div class="glass-card" style="padding:0.65rem 0.8rem;border-left:2px solid #38c8f0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.15rem;">
+                            <div style="font-size:0.75rem;font-weight:600;color:#f0f4ff;">Estigma aún presente (50+)</div>
+                            <span style="font-size:0.6rem;background:rgba(56,200,240,0.15);color:#38c8f0;padding:0.1rem 0.4rem;border-radius:4px;">Bajo</span>
+                        </div>
+                        <div style="font-size:0.68rem;color:#7a85a3;">Mitigación: posicionamiento como "coaching de bienestar" vs. "terapia"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 11: RADAR DE FORTALEZAS ======= -->
+<div class="slide" data-slide="11">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:400px;height:400px;top:-100px;right:-80px;background:#7c6dff;opacity:0.1;"></div>
+        <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:#38c8f0;opacity:0.08;"></div>
+    </div>
+    <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#a89bff;font-weight:600;margin-bottom:0.8rem;">10 — Fortalezas Estratégicas</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;margin-bottom:1.2rem;">Ventajas competitivas medibles</h2>
+        <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:center;">
+            <!-- Radar SVG -->
+            <div style="display:flex;justify-content:center;align-items:center;">
+                <svg viewBox="0 0 260 260" width="240" height="240" style="overflow:visible;">
+                    <!-- Grid circles -->
+                    <circle cx="130" cy="130" r="100" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                    <circle cx="130" cy="130" r="75" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                    <circle cx="130" cy="130" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                    <circle cx="130" cy="130" r="25" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                    <!-- Axis lines: 6 dimensions -->
+                    <line x1="130" y1="30" x2="130" y2="130" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+                    <line x1="130" y1="230" x2="130" y2="130" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+                    <line x1="43.4" y1="80" x2="130" y2="130" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+                    <line x1="216.6" y1="80" x2="130" y2="130" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+                    <line x1="43.4" y1="180" x2="130" y2="130" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+                    <line x1="216.6" y1="180" x2="130" y2="130" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+                    <!-- CONSTELLia shape: Innovación95, Accesibilidad92, Escalabilidad88, Diferenciación98, Rapidez90, Precio85 -->
+                    <!-- Points: 0°=Innovación(95%→95px), 60°=Accesibilidad(92%), 120°=Escalabilidad(88%), 180°=Diferenciación(98%), 240°=Rapidez(90%), 300°=Precio(85%) -->
+                    <!-- Calcul: 130+r*sin(θ), 130-r*cos(θ) for each point -->
+                    <!-- 0°: 130+95*sin0=130, 130-95=35 | 60°: 130+92*0.866=209.7, 130-92*0.5=84 | 120°: 130+88*0.866=206.2, 130+88*0.5=174 | 180°: 130+0=130, 130+98=228 | 240°: 130-90*0.866=52, 130+90*0.5=175 | 300°: 130-85*0.866=56.3, 130-85*0.5=87.5 -->
+                    <polygon points="130,35 209.7,84 206.2,174 130,228 52,175 56.3,87.5" 
+                             fill="rgba(124,109,255,0.25)" stroke="#7c6dff" stroke-width="1.5" 
+                             class="radar-shape" style="stroke-dasharray:600;stroke-dashoffset:600;transition:stroke-dashoffset 1.2s ease;"/>
+                    <!-- Competitor average shape (lower) -->
+                    <polygon points="130,80 186,110 182,160 130,188 74,162 79,112" 
+                             fill="rgba(56,200,240,0.08)" stroke="#38c8f0" stroke-width="1" stroke-dasharray="4,3" opacity="0.7"/>
+                    <!-- Dots -->
+                    <g class="radar-dots" style="opacity:0;transition:opacity 0.4s ease 0.8s;">
+                        <circle cx="130" cy="35" r="4" fill="#7c6dff"/>
+                        <circle cx="209.7" cy="84" r="4" fill="#7c6dff"/>
+                        <circle cx="206.2" cy="174" r="4" fill="#7c6dff"/>
+                        <circle cx="130" cy="228" r="4" fill="#7c6dff"/>
+                        <circle cx="52" cy="175" r="4" fill="#7c6dff"/>
+                        <circle cx="56.3" cy="87.5" r="4" fill="#7c6dff"/>
+                    </g>
+                    <!-- Labels -->
+                    <text x="130" y="22" text-anchor="middle" fill="#c4cbdf" font-size="9" font-family="DM Sans">Innovación</text>
+                    <text x="224" y="78" text-anchor="start" fill="#c4cbdf" font-size="9" font-family="DM Sans">Accesibilidad</text>
+                    <text x="224" y="182" text-anchor="start" fill="#c4cbdf" font-size="9" font-family="DM Sans">Escalabilidad</text>
+                    <text x="130" y="248" text-anchor="middle" fill="#c4cbdf" font-size="9" font-family="DM Sans">Diferenciación</text>
+                    <text x="36" y="182" text-anchor="end" fill="#c4cbdf" font-size="9" font-family="DM Sans">Rapidez</text>
+                    <text x="36" y="78" text-anchor="end" fill="#c4cbdf" font-size="9" font-family="DM Sans">Precio</text>
+                    <!-- Legend -->
+                    <rect x="10" y="255" width="10" height="8" fill="rgba(124,109,255,0.5)" rx="2"/>
+                    <text x="23" y="262" fill="#7a85a3" font-size="7.5" font-family="DM Sans">CONSTELLia</text>
+                    <line x1="85" y1="259" x2="95" y2="259" stroke="#38c8f0" stroke-width="1" stroke-dasharray="3,2"/>
+                    <text x="98" y="262" fill="#7a85a3" font-size="7.5" font-family="DM Sans">Promedio competencia</text>
+                </svg>
+            </div>
+            <!-- Valores -->
+            <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
+                    <span style="font-size:0.8rem;color:#c4cbdf;">🔬 Innovación tecnológica</span>
+                    <div style="display:flex;align-items:center;gap:0.5rem;"><div class="hbar-track" style="width:80px;"><div class="hbar-fill" data-width="95" style="background:#7c6dff;height:6px;"></div></div><span style="font-size:0.78rem;font-weight:700;color:#7c6dff;">95/100</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-top:1px solid rgba(255,255,255,0.05);">
+                    <span style="font-size:0.8rem;color:#c4cbdf;">♿ Accesibilidad</span>
+                    <div style="display:flex;align-items:center;gap:0.5rem;"><div class="hbar-track" style="width:80px;"><div class="hbar-fill" data-width="92" style="background:#38c8f0;height:6px;"></div></div><span style="font-size:0.78rem;font-weight:700;color:#38c8f0;">92/100</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-top:1px solid rgba(255,255,255,0.05);">
+                    <span style="font-size:0.8rem;color:#c4cbdf;">📈 Escalabilidad</span>
+                    <div style="display:flex;align-items:center;gap:0.5rem;"><div class="hbar-track" style="width:80px;"><div class="hbar-fill" data-width="88" style="background:#a89bff;height:6px;"></div></div><span style="font-size:0.78rem;font-weight:700;color:#a89bff;">88/100</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-top:1px solid rgba(255,255,255,0.05);">
+                    <span style="font-size:0.8rem;color:#c4cbdf;">🏆 Diferenciación</span>
+                    <div style="display:flex;align-items:center;gap:0.5rem;"><div class="hbar-track" style="width:80px;"><div class="hbar-fill" data-width="98" style="background:#f0a842;height:6px;"></div></div><span style="font-size:0.78rem;font-weight:700;color:#f0a842;">98/100</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-top:1px solid rgba(255,255,255,0.05);">
+                    <span style="font-size:0.8rem;color:#c4cbdf;">⚡ Velocidad de respuesta</span>
+                    <div style="display:flex;align-items:center;gap:0.5rem;"><div class="hbar-track" style="width:80px;"><div class="hbar-fill" data-width="90" style="background:#38c8f0;height:6px;"></div></div><span style="font-size:0.78rem;font-weight:700;color:#38c8f0;">90/100</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-top:1px solid rgba(255,255,255,0.05);">
+                    <span style="font-size:0.8rem;color:#c4cbdf;">💰 Precio competitivo</span>
+                    <div style="display:flex;align-items:center;gap:0.5rem;"><div class="hbar-track" style="width:80px;"><div class="hbar-fill" data-width="85" style="background:#7c6dff;height:6px;"></div></div><span style="font-size:0.78rem;font-weight:700;color:#7c6dff;">85/100</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 12: ROADMAP ======= -->
+<div class="slide" data-slide="12">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:350px;height:350px;top:-70px;right:-70px;background:#f0a842;opacity:0.07;"></div>
+        <div class="blob" style="width:240px;height:240px;bottom:-50px;left:-40px;background:#7c6dff;opacity:0.08;"></div>
+    </div>
+    <div class="content">
+        <div class="reveal" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:#f0a842;font-weight:600;margin-bottom:0.8rem;">11 — Roadmap</div>
+        <h2 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;margin-bottom:1.2rem;">Plan de ejecución 2026–2028</h2>
+        <!-- Timeline -->
+        <div class="reveal" style="position:relative;padding:0 1rem;">
+            <!-- Línea horizontal -->
+            <div style="position:absolute;top:28px;left:2.5%;right:2.5%;height:3px;background:linear-gradient(90deg,#7c6dff,#38c8f0,#f0a842);border-radius:2px;z-index:0;"></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;position:relative;z-index:1;">
+                <!-- Q1-Q2 2026 -->
+                <div style="text-align:center;">
+                    <div style="width:18px;height:18px;border-radius:50%;background:#7c6dff;box-shadow:0 0 12px rgba(124,109,255,0.6);margin:0 auto 0.7rem;border:3px solid #0b0f1e;"></div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#7c6dff;margin-bottom:0.4rem;">Q1–Q2 2026</div>
+                    <div class="glass-card" style="padding:0.7rem;text-align:left;">
+                        <div style="font-size:0.7rem;font-weight:600;color:#f0f4ff;margin-bottom:0.3rem;">🚀 MVP & Aceleradora</div>
+                        <ul style="font-size:0.65rem;color:#7a85a3;margin:0;padding-left:0.8rem;line-height:1.7;">
+                            <li>MVP funcional B2C</li>
+                            <li>50 usuarios beta</li>
+                            <li>2 empresas piloto</li>
+                            <li>Seed €80–150K</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Q3-Q4 2026 -->
+                <div style="text-align:center;">
+                    <div style="width:18px;height:18px;border-radius:50%;background:#38c8f0;box-shadow:0 0 12px rgba(56,200,240,0.6);margin:0 auto 0.7rem;border:3px solid #0b0f1e;"></div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#38c8f0;margin-bottom:0.4rem;">Q3–Q4 2026</div>
+                    <div class="glass-card" style="padding:0.7rem;text-align:left;">
+                        <div style="font-size:0.7rem;font-weight:600;color:#f0f4ff;margin-bottom:0.3rem;">📈 Tracción</div>
+                        <ul style="font-size:0.65rem;color:#7a85a3;margin:0;padding-left:0.8rem;line-height:1.7;">
+                            <li>500–1.200 usuarios</li>
+                            <li>10 empresas cliente</li>
+                            <li>ARR €114K</li>
+                            <li>Pre-Series A</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 2027 -->
+                <div style="text-align:center;">
+                    <div style="width:18px;height:18px;border-radius:50%;background:#a89bff;box-shadow:0 0 12px rgba(168,155,255,0.6);margin:0 auto 0.7rem;border:3px solid #0b0f1e;"></div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#a89bff;margin-bottom:0.4rem;">2027 — Escala</div>
+                    <div class="glass-card" style="padding:0.7rem;text-align:left;">
+                        <div style="font-size:0.7rem;font-weight:600;color:#f0f4ff;margin-bottom:0.3rem;">⚡ Series A</div>
+                        <ul style="font-size:0.65rem;color:#7a85a3;margin:0;padding-left:0.8rem;line-height:1.7;">
+                            <li>3.500–12.000 usuarios</li>
+                            <li>Integración seguros</li>
+                            <li>ARR €800K–7.1M</li>
+                            <li>Expansión Portugal</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 2028 -->
+                <div style="text-align:center;">
+                    <div style="width:18px;height:18px;border-radius:50%;background:#f0a842;box-shadow:0 0 12px rgba(240,168,66,0.6);margin:0 auto 0.7rem;border:3px solid #0b0f1e;"></div>
+                    <div style="font-size:0.7rem;font-weight:700;color:#f0a842;margin-bottom:0.4rem;">2028 — LATAM</div>
+                    <div class="glass-card" style="padding:0.7rem;text-align:left;">
+                        <div style="font-size:0.7rem;font-weight:600;color:#f0f4ff;margin-bottom:0.3rem;">🌎 Expansión</div>
+                        <ul style="font-size:0.65rem;color:#7a85a3;margin:0;padding-left:0.8rem;line-height:1.7;">
+                            <li>18K–60K usuarios</li>
+                            <li>México + Colombia</li>
+                            <li>ARR €4.1M–35.3M</li>
+                            <li>Series B</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SLIDE 13: CIERRE / CTA ======= -->
+<div class="slide" data-slide="13">
+    <div class="gradient-mesh">
+        <div class="blob" style="width:520px;height:520px;top:-130px;right:-120px;background:#7c6dff;opacity:0.14;"></div>
+        <div class="blob" style="width:320px;height:320px;bottom:-90px;left:-70px;background:#38c8f0;opacity:0.11;"></div>
+        <div class="blob" style="width:210px;height:210px;top:40%;left:10%;background:#f0a842;opacity:0.09;"></div>
+        <div class="blob" style="width:150px;height:150px;bottom:25%;right:15%;background:#a89bff;opacity:0.08;"></div>
+    </div>
+    <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;"></canvas>
+    <div class="content text-center">
+        <div class="reveal" style="font-size:3.5rem;margin-bottom:1rem;animation:float 3s ease-in-out infinite;">✦</div>
+        <h1 class="reveal" style="font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,4rem);font-weight:900;background:linear-gradient(135deg,#a89bff 0%,#38c8f0 50%,#f0a842 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.8rem;line-height:1.1;">La oportunidad es ahora.<br>El mercado espera.</h1>
+        <p class="reveal" style="font-size:0.95rem;color:#7a85a3;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:2rem;">16 millones de personas. $4.188M de mercado. 0 competidores con nuestra propuesta.</p>
+        <div class="reveal" style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;">
+            <div style="background:rgba(124,109,255,0.1);border:1px solid rgba(124,109,255,0.25);border-radius:12px;padding:1rem 1.5rem;text-align:center;">
+                <div style="font-size:1.6rem;font-weight:900;color:#7c6dff;" data-count="4188" data-prefix="$" data-suffix="M">$0M</div>
+                <div style="font-size:0.68rem;color:#7a85a3;margin-top:0.2rem;text-transform:uppercase;letter-spacing:0.08em;">TAM España</div>
+            </div>
+            <div style="background:rgba(56,200,240,0.1);border:1px solid rgba(56,200,240,0.25);border-radius:12px;padding:1rem 1.5rem;text-align:center;">
+                <div style="font-size:1.6rem;font-weight:900;color:#38c8f0;" data-count="18" data-suffix="%">0%</div>
+                <div style="font-size:0.68rem;color:#7a85a3;margin-top:0.2rem;text-transform:uppercase;letter-spacing:0.08em;">CAGR proyectado</div>
+            </div>
+            <div style="background:rgba(240,168,66,0.1);border:1px solid rgba(240,168,66,0.25);border-radius:12px;padding:1rem 1.5rem;text-align:center;">
+                <div style="font-size:1.6rem;font-weight:900;color:#f0a842;" data-count="90" data-suffix="%+">0%</div>
+                <div style="font-size:0.68rem;color:#7a85a3;margin-top:0.2rem;text-transform:uppercase;letter-spacing:0.08em;">Margen bruto</div>
+            </div>
+        </div>
+        <div class="reveal" style="font-size:0.8rem;color:#7a85a3;">CONSTELLia · Análisis de Mercado España 2025–2030 · Preparado para aceleradora</div>
+    </div>
+</div>
+
+</div><!-- end deck -->
+
+<!-- NAVIGATION -->
+<div class="nav-controls">
+    <button class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
+    <div class="slide-dots" id="dots"></div>
+    <button class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
+    <span class="slide-counter" id="counter">1 / 13</span>
+</div>
+
+<script>
+    /* === Deck Nav === */
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+    const dotsContainer = document.getElementById('dots');
+    const counter = document.getElementById('counter');
+    for (let i = 1; i <= total; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 1 ? ' active' : '');
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+    }
+    function goToSlide(n) {
+        const prev = document.querySelector('.slide.active');
+        const next = document.querySelector(`.slide[data-slide="${n}"]`);
+        if (prev) prev.classList.remove('active');
+        if (next) { next.classList.add('active'); animateSlide(next); }
+        current = n; updateNav();
+    }
+    function changeSlide(dir) { let n = current + dir; if (n < 1) n = total; if (n > total) n = 1; goToSlide(n); }
+    function updateNav() { document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current)); counter.textContent = current + ' / ' + total; }
+    document.addEventListener('keydown', e => { if (e.key==='ArrowRight'||e.key===' '){e.preventDefault();changeSlide(1);} if(e.key==='ArrowLeft'){e.preventDefault();changeSlide(-1);} });
+    let tx = 0;
+    document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+    document.addEventListener('touchend', e => { const d = tx - e.changedTouches[0].clientX; if (Math.abs(d) > 50) changeSlide(d > 0 ? 1 : -1); });
+
+    /* === Animate slide === */
+    function animateSlide(slide) {
+        slide.querySelectorAll('.reveal').forEach((el, i) => {
+            el.style.transition = 'none';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(18px)';
+            el.offsetHeight;
+            const delay = i * 0.075;
+            el.style.transition = `opacity 0.32s ease ${delay}s, transform 0.32s ease ${delay}s`;
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        });
+        animateEffects(slide);
+    }
+
+    function animateEffects(slide) {
+        /* Counters */
+        slide.querySelectorAll('[data-count]:not(.counted)').forEach(el => {
+            el.classList.add('counted');
+            const target = parseInt(el.dataset.count);
+            const suffix = el.dataset.suffix || '';
+            const prefix = el.dataset.prefix || '';
+            let cur = 0;
+            const step = target / 45;
+            const timer = setInterval(() => {
+                cur += step;
+                if (cur >= target) { cur = target; clearInterval(timer); }
+                el.textContent = prefix + Math.round(cur).toLocaleString() + suffix;
+            }, 28);
+        });
+        /* Horizontal bar fills */
+        slide.querySelectorAll('.hbar-fill:not(.fill-init)').forEach((bar, i) => {
+            bar.classList.add('fill-init');
+            bar.style.width = '0%';
+            bar.style.transition = `width 0.6s ease ${i * 0.08}s`;
+            bar.offsetHeight;
+            bar.style.width = bar.dataset.width + '%';
+        });
+        /* Vertical bars */
+        slide.querySelectorAll('.bar[data-height]:not(.bar-init)').forEach((bar, i) => {
+            bar.classList.add('bar-init');
+            bar.style.height = '0%';
+            bar.style.transition = `height 0.55s ease ${i * 0.1}s`;
+            bar.offsetHeight;
+            bar.style.height = bar.dataset.height + '%';
+        });
+        /* Radar */
+        slide.querySelectorAll('.radar-shape:not(.radar-init)').forEach(shape => {
+            shape.classList.add('radar-init');
+            shape.style.transition = 'stroke-dashoffset 1.2s ease 0.3s';
+            shape.offsetHeight;
+            shape.style.strokeDashoffset = '0';
+            const dots = shape.closest('svg')?.querySelector('.radar-dots');
+            if (dots) { dots.style.transition = 'opacity 0.4s ease 1s'; dots.style.opacity = '1'; }
+        });
+    }
+
+    /* === Mouse Spotlight === */
+    document.addEventListener('mousemove', e => {
+        const s = document.querySelector('.mouse-spotlight');
+        if (s) s.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(124,109,255,0.06), transparent 40%)`;
+    });
+
+    /* === Parallax deco shapes === */
+    let mx = window.innerWidth/2, my = window.innerHeight/2;
+    const cx = window.innerWidth/2, cy = window.innerHeight/2;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    (function tick() {
+        const ox = (mx-cx)/cx, oy = (my-cy)/cy;
+        document.querySelectorAll('.deco-shape').forEach(s => {
+            const sp = parseFloat(s.dataset.speed)||0.03;
+            s.style.transform = `translate(${ox*sp*100}px,${oy*sp*100}px)`;
+        });
+        requestAnimationFrame(tick);
+    })();
+
+    /* === Particle Canvas === */
+    window.initParticles = function(canvas, opts) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth || window.innerWidth;
+        canvas.height = canvas.offsetHeight || window.innerHeight;
+        const interactive = opts.interactive !== false;
+        const count = opts.count || (interactive ? 55 : 18);
+        let pmx = -9999, pmy = -9999;
+        const rgb = '124,109,255';
+        const particles = Array.from({length:count}, () => ({
+            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+            vx: (Math.random()-0.5)*0.28, vy: (Math.random()-0.5)*0.28,
+            size: Math.random()*2.2+0.7, alpha: Math.random()*0.32+0.1
+        }));
+        if (interactive) {
+            canvas.addEventListener('mousemove', e => { const r=canvas.getBoundingClientRect(); pmx=e.clientX-r.left; pmy=e.clientY-r.top; });
+            canvas.addEventListener('mouseleave', () => { pmx=-9999; pmy=-9999; });
+        }
+        (function loop() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p => {
+                if (interactive) { const dx=p.x-pmx,dy=p.y-pmy,dist=Math.sqrt(dx*dx+dy*dy); if(dist<110){const f=(110-dist)/110*2;p.vx+=(dx/dist)*f*0.1;p.vy+=(dy/dist)*f*0.1;} }
+                p.vx*=0.98; p.vy*=0.98; p.x+=p.vx; p.y+=p.vy;
+                if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;if(p.y<0)p.y=canvas.height;if(p.y>canvas.height)p.y=0;
+                ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(${rgb},${p.alpha})`;ctx.fill();
+            });
+            requestAnimationFrame(loop);
+        })();
+    };
+    document.querySelectorAll('.particle-canvas').forEach(c => window.initParticles(c, {interactive:true,count:55}));
+    document.querySelectorAll('.particle-canvas-ambient').forEach(c => window.initParticles(c, {interactive:false,count:18}));
+
+    /* Init first slide */
+    try { animateSlide(document.querySelector('.slide.active')); } catch(e) {}
+</script>
+</body>
+</html>
